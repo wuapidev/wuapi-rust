@@ -65,7 +65,7 @@ impl AccountsResource {
 
     /// Update an account
     ///
-    /// Rename it, set automatic call rejection, or turn on and tune its pacing (anti-ban protections, off by default). Call settings are sent to the live session (the engine must know the account; it does not need to be `ready`). Pacing applies from the next send, without reconnecting. `historySync` is stored at once and applies to the next link: WhatsApp sends history only right after a number links. A `proxyLocation` change is checked before anything else is applied: a refused location (`400` or `429`) leaves the whole request unapplied.
+    /// Rename it, set automatic call rejection, or turn on and tune its pacing (anti-ban protections, off by default). Call settings are sent to the live session (the engine must know the account; it does not need to be `ready`). Pacing applies from the next send, without reconnecting. `imageQuality` applies to the images sent from then on. `historySync` is stored at once and applies to the next link: WhatsApp sends history only right after a number links. A `proxyLocation` change is checked before anything else is applied: a refused location (`400` or `429`) leaves the whole request unapplied.
     ///
     /// `PATCH /v1/accounts/{accountId}`
     ///

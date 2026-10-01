@@ -242,6 +242,9 @@ pub struct Account {
     /// Which received media is downloaded right away; the rest on demand. `none` for new accounts.
     #[serde(rename = "mediaAutoDownload")]
     pub media_auto_download: MediaAutoDownloadSetting,
+    /// What this account's image messages are re-encoded to before their upload. `standard` by default. A send can name its own with `media.quality`.
+    #[serde(rename = "imageQuality")]
+    pub image_quality: ImageQualitySetting,
     /// Your labels. Set from an invitation's `metadata` when the invitee links the number.
     pub metadata: std::collections::BTreeMap<String, String>,
     /// When linking first finished.
@@ -383,6 +386,22 @@ string_enum! {
     }
 }
 
+string_enum! {
+    /// What an image message is re-encoded to before it is uploaded through the number's proxy (proxy traffic), the way the WhatsApp apps do when a photo is sent. Only image messages: stickers, documents (an image sent as a document included), video and audio always go up as the file they are. An image is left as it is when re-encoding would not make it clearly smaller, and a PNG with transparency stays a PNG.
+    /// - `standard`: longest side at most 1600 px, JPEG quality 80. What the WhatsApp apps send by default, and the smallest upload.
+    /// - `hd`: longest side at most 4096 px, JPEG quality 90, like the apps' HD switch.
+    /// - `original`: the file is not re-encoded. Only lossless steps apply (metadata such as Exif and GPS is removed; the pixels are the same).
+    pub enum ImageQualitySetting {
+        /// `standard`
+        Standard = "standard",
+        /// `hd`
+        Hd = "hd",
+        /// `original`
+        Original = "original",
+        @unknown Unknown,
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct AccountCreateRequest {
     /// Label, at most 100 characters.
@@ -435,6 +454,9 @@ pub struct AccountUpdateRequest {
     /// Which received media is downloaded right away. Applies to messages received from then on; files already received keep what they had.
     #[serde(rename = "mediaAutoDownload", default, skip_serializing_if = "Option::is_none")]
     pub media_auto_download: Option<MediaAutoDownloadSetting>,
+    /// What this account's image messages are re-encoded to before their upload. Applies to images sent from then on; a send that names `media.quality` keeps its own.
+    #[serde(rename = "imageQuality", default, skip_serializing_if = "Option::is_none")]
+    pub image_quality: Option<ImageQualitySetting>,
     /// Move the number, or switch whether its city is exact. A location change: the number gets a new exit IP and its session reconnects.
     #[serde(rename = "proxyLocation", default, skip_serializing_if = "Option::is_none")]
     pub proxy_location: Option<ProxyLocationUpdate>,
@@ -913,6 +935,34 @@ impl SendMedia {
     }
 }
 
+/// An image to send, fetched by our servers.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct SendImageMedia {
+    /// Public `http(s)` URL our servers download (up to 5 redirects, 60 seconds, 100 MB), as `wuapi-media-fetcher/1.0 (+https://wuapi.dev)`. Private and internal addresses are refused; hosts with hotlink protection may refuse the download, which fails the message with a message naming the host and its answer (`fetch media from upload.wikimedia.org: HTTP 403`).
+    pub url: String,
+    /// Guessed from the URL extension when omitted. Voice notes: send ogg/opus, nothing is transcoded.
+    #[serde(rename = "mimeType", default, skip_serializing_if = "Option::is_none")]
+    pub mime_type: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filename: Option<String>,
+    /// The quality of this image, instead of the account's `imageQuality`. `hd` is WhatsApp's HD photo; `original` sends the file without re-encoding it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quality: Option<ImageQualitySetting>,
+}
+
+impl SendImageMedia {
+    /// A `SendImageMedia` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(url: impl Into<String>) -> Self {
+        Self {
+            url: url.into(),
+            mime_type: None,
+            filename: None,
+            quality: None,
+        }
+    }
+}
+
 /// A video to send, fetched by our servers.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct SendVideoMedia {
@@ -1168,7 +1218,7 @@ pub struct SendImageMessageRequest {
     pub to: String,
     /// `image`.
     pub r#type: String,
-    pub media: SendMedia,
+    pub media: SendImageMedia,
     /// Caption. At most 4096 characters.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
@@ -1198,7 +1248,11 @@ pub struct SendImageMessageRequest {
 impl SendImageMessageRequest {
     /// A `SendImageMessageRequest` from its required fields; the rest start as `None`.
     #[must_use]
-    pub fn new(account_id: impl Into<String>, to: impl Into<String>, media: SendMedia) -> Self {
+    pub fn new(
+        account_id: impl Into<String>,
+        to: impl Into<String>,
+        media: SendImageMedia,
+    ) -> Self {
         Self {
             account_id: account_id.into(),
             to: to.into(),
@@ -1987,6 +2041,9 @@ pub struct StoryMedia {
     pub url: String,
     #[serde(rename = "mimeType", default, skip_serializing_if = "Option::is_none")]
     pub mime_type: Option<String>,
+    /// Images only: the quality of this image, instead of the account's `imageQuality`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quality: Option<ImageQualitySetting>,
 }
 
 impl StoryMedia {
@@ -1996,6 +2053,7 @@ impl StoryMedia {
         Self {
             url: url.into(),
             mime_type: None,
+            quality: None,
         }
     }
 }

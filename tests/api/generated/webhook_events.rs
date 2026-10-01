@@ -60,6 +60,7 @@ fn event_verifies_and_parses() {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "metadata": {
             "key": "value 1"
           },
