@@ -2430,7 +2430,7 @@ pub struct ReadReceiptsRequest {
     pub message_ids: Option<Vec<String>>,
 }
 
-/// A chat of an account: a conversation with a contact, a group or a channel that wuapi holds at least one message of. Its name and latest message come from what wuapi stored; `unread`, `unreadCount`, `pinned`, `archived` and `muted` are WhatsApp's state of the chat, the one the chat actions change and `chat.updated` reports. wuapi learns that state from live changes (made through the API, on the phone or on another device), not from the sync after linking, so a state it has never observed is `null`, not `false`. The account's stories are not a chat.
+/// A chat of an account: a conversation with a contact, a group or a channel that wuapi holds at least one message of. Its name and latest message come from what wuapi stored; `unread`, `unreadCount`, `pinned`, `archived` and `muted` are WhatsApp's state of the chat, the one the chat actions change and `chat.updated` reports. wuapi takes that state from what WhatsApp syncs to the linked number: which chats are pinned, archived and muted from the account's chat settings, after linking and after every full sync of them, and each chat's unread count and unread mark from the history WhatsApp sends when the number is linked. From then on it follows live changes (made through the API, on the phone or on another device). A state it does not know yet is `null`, not `false`: on a number linked before wuapi took this state, `pinned`, `archived` and `muted` are `null` until its session next starts, and `unreadCount` stays `null` for a chat until it gets a message or is read. The account's stories are not a chat.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Chat {
     /// Always `chat`.
@@ -2465,16 +2465,19 @@ pub struct Chat {
     pub last_message_at: String,
     /// The chat has unread messages or was marked as unread on WhatsApp. `null` when unknown.
     pub unread: Option<bool>,
-    /// Messages received and not read on WhatsApp yet: counted from the messages wuapi stored, and back to 0 when the account replies, sends read receipts, marks the chat as read or reads it on the phone. `0` with `unread: true` is a chat marked as unread. `null` when unknown: a chat that existed before wuapi kept this count or that only holds imported history, until it is read for the first time.
+    /// Messages received and not read on WhatsApp yet: the phone's count when the number was linked, then counted from the messages wuapi stored, and back to 0 when the account replies, sends read receipts, marks the chat as read or reads it on the phone. `0` with `unread: true` is a chat marked as unread. `null` when unknown: a chat whose count the phone did not send at linking (or of a number linked before wuapi took it) and that holds no live message, until it is read for the first time.
     #[serde(rename = "unreadCount")]
     pub unread_count: Option<i64>,
-    /// Pinned on WhatsApp. `null` when never observed.
+    /// Pinned on WhatsApp. `null` when not known yet.
     pub pinned: Option<bool>,
-    /// Archived on WhatsApp. `null` when never observed.
+    /// When the chat was pinned: the phone's time for a chat that was pinned when the number was linked, else when the pin reached wuapi. WhatsApp shows pinned chats newest pin first. `null` when the chat is not pinned, or is pinned and the time is unknown (a pin found by a later sync of the chat settings, which carry no time).
+    #[serde(rename = "pinnedAt")]
+    pub pinned_at: Option<String>,
+    /// Archived on WhatsApp. `null` when not known yet.
     pub archived: Option<bool>,
-    /// Muted on WhatsApp right now (a timed mute that ran out is `false`). `null` when never observed.
+    /// Muted on WhatsApp right now (a timed mute that ran out is `false`). `null` when not known yet.
     pub muted: Option<bool>,
-    /// When the mute ends. `null` when the chat is not muted, is muted with no end, or its mute was never observed.
+    /// When the mute ends. `null` when the chat is not muted, is muted with no end, or its mute is not known yet.
     #[serde(rename = "muteExpiresAt")]
     pub mute_expires_at: Option<String>,
 }
@@ -4612,7 +4615,7 @@ pub struct GroupJoinRequestEventData {
     pub object: GroupJoinRequest,
 }
 
-/// A chat was archived, pinned, muted, marked read, deleted, cleared or a message starred, on the phone or another device. Live changes only; the initial full sync is not replayed.
+/// A chat was archived, pinned, muted, marked read, deleted, cleared or a message starred, on the phone or another device. Live changes only: the state wuapi takes from the syncs that follow linking (see `Chat`) is not sent as events, read it from `GET /v1/accounts/{accountId}/chats`.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ChatUpdatedEvent {
     /// Event id (`evt_...`). Deduplicate on it.

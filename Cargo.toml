@@ -2,7 +2,7 @@
 
 [package]
 name = "wuapi"
-version = "0.10.0"
+version = "0.11.0"
 edition = "2024"
 rust-version = "1.85"
 description = "Rust SDK for wuapi, a WhatsApp API for developers. Link numbers by QR or pairing code, send and receive messages, manage chats, contacts, groups and channels, split them into projects and verify webhooks."

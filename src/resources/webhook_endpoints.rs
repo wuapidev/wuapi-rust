@@ -21,7 +21,7 @@ use crate::types;
 /// | `group.joined` | The account joined or created a group. | `group` |
 /// | `group.updated` | A group changed. | `group_change` |
 /// | `group.join_requested`, `group.join_request_revoked` | Someone asked to join a group that needs approval, or withdrew the request. | `group_join_request` |
-/// | `chat.updated` | A chat was archived, pinned, muted, marked read, deleted, cleared or a message starred, on the phone or another device. Live changes only; the initial full sync is not replayed. | `chat_change` |
+/// | `chat.updated` | A chat was archived, pinned, muted, marked read, deleted, cleared or a message starred, on the phone or another device. Live changes only: the state wuapi takes from the syncs that follow linking (see `Chat`) is not sent as events, read it from `GET /v1/accounts/{accountId}/chats`. | `chat_change` |
 /// | `chat.presence_updated` | A contact is typing or recording in a chat. | `chat_presence` |
 /// | `contact.presence_updated` | A subscribed contact came online or went offline. Subscribe with `POST .../contacts/{contactId}/subscribe-presence`. | `contact_presence` |
 /// | `contact.picture_updated` | A contact or group picture changed or was removed. | `picture_change` |
