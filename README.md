@@ -95,13 +95,13 @@ Contacts are E.164 (`+584241112233`), or `lid:<digits>` when WhatsApp hides the 
 `messages().send(..)` takes any of the `Send...MessageRequest` types. Each has a `new` with its required fields; the optional ones are public fields that start as `None`.
 
 ```rust,no_run
-use wuapi::types::{SendDocumentMessageRequest, SendMedia, SendTextMessageRequest};
+use wuapi::types::{SendDocumentMessageRequest, SendMediaUrl, SendTextMessageRequest};
 use wuapi::Wuapi;
 
 async fn examples(client: &Wuapi, account_id: &str) -> Result<(), wuapi::Error> {
-    let mut media = SendMedia::new("https://example.com/invoice.pdf");
+    let mut media = SendMediaUrl::new("https://example.com/invoice.pdf");
     media.filename = Some("invoice.pdf".to_owned());
-    let mut document = SendDocumentMessageRequest::new(account_id, "+584241112233", media);
+    let mut document = SendDocumentMessageRequest::new(account_id, "+584241112233", media.into());
     document.text = Some("Your invoice".to_owned());
     client.messages().send(document).await?;
 
@@ -118,6 +118,46 @@ async fn examples(client: &Wuapi, account_id: &str) -> Result<(), wuapi::Error> 
 ```
 
 Everything else works on the account: chats, contacts, the profile, privacy, stories, groups and communities, channels, labels and calls. Those methods take the account id first, and the account must be `ready`. The methods are grouped and named like the [TypeScript SDK](https://www.npmjs.com/package/@wuapidev/sdk)'s, in snake case: `client.chats().archive(account_id, chat_id)`, `client.groups().add_participants(account_id, group_id, params)`.
+
+## Sending a local file
+
+A file you have (a local file, a pasted image, a recorded voice note) is uploaded first and sent by its upload id. Create the upload with its type and size, post the bytes to the `upload_url` of the answer with your own HTTP client, complete it with the `storageId` that post answers, and send it:
+
+```rust,no_run
+use wuapi::types::{FileUploadCreateRequest, SendImageMediaUpload, SendImageMessageRequest, UploadCompleteRequest};
+use wuapi::Wuapi;
+
+async fn send_photo(client: &Wuapi, account_id: &str, bytes: Vec<u8>) -> Result<(), Box<dyn std::error::Error>> {
+    // 1. Declare the file. The answer carries `upload_url`, valid for one hour.
+    let size = i64::try_from(bytes.len())?;
+    let upload = client.uploads().create(FileUploadCreateRequest::new("image/jpeg", size)).await?;
+    let upload_url = upload.upload_url.ok_or("the upload has no upload URL")?;
+
+    // 2. Post the bytes straight to storage: no API key, the URL is the credential.
+    let stored = reqwest::Client::new()
+        .post(upload_url)
+        .header("Content-Type", "image/jpeg")
+        .body(bytes)
+        .send()
+        .await?
+        .error_for_status()?
+        .text()
+        .await?;
+    let stored: serde_json::Value = serde_json::from_str(&stored)?;
+    let storage_id = stored["storageId"].as_str().ok_or("the upload URL answered no storageId")?;
+
+    // 3. Complete it, then send it. A ready upload can be sent again for 24 hours.
+    let upload = client.uploads().complete(&upload.id, UploadCompleteRequest::new(storage_id)).await?;
+    let media = SendImageMediaUpload::new(upload.id);
+    let image = SendImageMessageRequest::new(account_id, "+584241112233", media.into());
+    client.messages().send(image).await?;
+    Ok(())
+}
+```
+
+Files up to 100 MB work this way, because the bytes never pass through the API. A file up to 5 MB can skip steps 2 and 3: `uploads().create(InlineUploadCreateRequest::new("image/jpeg", base64))` takes the bytes as base64 and answers an upload that is already `ready`. A voice note is an Ogg/Opus file sent with `SendVoiceMessageRequest`.
+
+Every step is safe to repeat: `create` and `complete` carry an idempotency key, completing a `ready` upload with the same `storageId` answers it again, and a send that is retried with the same key is replayed, never sent twice.
 
 ## Drops, timeouts and retries
 
@@ -323,7 +363,7 @@ async fn raw(client: &Wuapi) -> Result<serde_json::Value, wuapi::Error> {
 
 ## Generated code
 
-This crate, version 0.9.0, is generated from the wuapi OpenAPI spec: its types, methods, tests and this README. Do not edit it by hand. Report problems at [wuapi.dev/support](https://wuapi.dev/support).
+This crate, version 0.10.0, is generated from the wuapi OpenAPI spec: its types, methods, tests and this README. Do not edit it by hand. Report problems at [wuapi.dev/support](https://wuapi.dev/support).
 
 ## License
 

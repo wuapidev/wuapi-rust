@@ -21,6 +21,7 @@ use crate::resources::projects::ProjectsResource;
 use crate::resources::proxy_locations::ProxyLocationsResource;
 use crate::resources::sticker_packs::StickerPacksResource;
 use crate::resources::stories::StoriesResource;
+use crate::resources::uploads::UploadsResource;
 use crate::resources::usage::UsageResource;
 use crate::resources::webhook_endpoints::WebhookEndpointsResource;
 
@@ -114,6 +115,12 @@ impl Wuapi {
     #[must_use]
     pub fn stories(&self) -> StoriesResource {
         StoriesResource::new(self.http.clone())
+    }
+
+    /// Send a file you have, not a URL: a local file, a pasted image, a recorded voice note. Create an upload, get its bytes to wuapi, then send it with `media: { uploadId }` on `POST /v1/messages` or a story.
+    #[must_use]
+    pub fn uploads(&self) -> UploadsResource {
+        UploadsResource::new(self.http.clone())
     }
 
     /// The `chats` methods.

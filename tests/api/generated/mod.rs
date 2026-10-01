@@ -20,6 +20,7 @@ mod projects;
 mod proxy_locations;
 mod sticker_packs;
 mod stories;
+mod uploads;
 mod usage;
 mod webhook_endpoints;
 mod client;
