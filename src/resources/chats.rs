@@ -17,7 +17,7 @@ impl ChatsResource {
 
     /// List chats
     ///
-    /// The account's chats, the one with the newest message first: every conversation with a contact, group or channel that wuapi holds a message of, each with its latest message and WhatsApp's unread, pinned, archived and muted state. A state wuapi has never observed is `null` (see `Chat`). The filters combine, and a page of combined filters may hold fewer chats than `limit` while `nextCursor` is set: keep following the cursor. With `q`, the chats that match, best match first.
+    /// The account's chats, the one with the newest message first: every conversation with a contact, group or channel that wuapi holds a message of, each with its latest message and WhatsApp's unread, pinned, archived and muted state. A state wuapi does not know yet is `null` (see `Chat`). The filters combine, and a page of combined filters may hold fewer chats than `limit` while `nextCursor` is set: keep following the cursor. With `q`, the chats that match, best match first.
     ///
     /// `GET /v1/accounts/{accountId}/chats`
     ///

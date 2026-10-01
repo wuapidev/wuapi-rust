@@ -3381,6 +3381,7 @@ mod chats {
               "unread": true,
               "unreadCount": 0,
               "pinned": true,
+              "pinnedAt": "2026-09-24T09:00:00.000Z",
               "archived": true,
               "muted": true,
               "muteExpiresAt": "2026-09-24T09:00:00.000Z"
@@ -3495,6 +3496,7 @@ mod chats {
               "unread": true,
               "unreadCount": 0,
               "pinned": true,
+              "pinnedAt": "2026-09-24T09:00:00.000Z",
               "archived": true,
               "muted": true,
               "muteExpiresAt": "2026-09-24T09:00:00.000Z"
@@ -3621,6 +3623,7 @@ mod chats {
             "unread": true,
             "unreadCount": 0,
             "pinned": true,
+            "pinnedAt": "2026-09-24T09:00:00.000Z",
             "archived": true,
             "muted": true,
             "muteExpiresAt": "2026-09-24T09:00:00.000Z"
@@ -3729,6 +3732,7 @@ mod chats {
             "unread": true,
             "unreadCount": 0,
             "pinned": true,
+            "pinnedAt": "2026-09-24T09:00:00.000Z",
             "archived": true,
             "muted": true,
             "muteExpiresAt": "2026-09-24T09:00:00.000Z"
@@ -3851,6 +3855,7 @@ mod chats {
               "unread": true,
               "unreadCount": 0,
               "pinned": true,
+              "pinnedAt": "2026-09-24T09:00:00.000Z",
               "archived": true,
               "muted": true,
               "muteExpiresAt": "2026-09-24T09:00:00.000Z"
@@ -3974,6 +3979,7 @@ mod chats {
           "unread": true,
           "unreadCount": 0,
           "pinned": true,
+          "pinnedAt": "2026-09-24T09:00:00.000Z",
           "archived": true,
           "muted": true,
           "muteExpiresAt": "2026-09-24T09:00:00.000Z"

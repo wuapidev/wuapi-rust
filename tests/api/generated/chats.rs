@@ -137,6 +137,7 @@ async fn list_streams_every_page() {
           "unread": true,
           "unreadCount": 0,
           "pinned": true,
+          "pinnedAt": "2026-09-24T09:00:00.000Z",
           "archived": true,
           "muted": true,
           "muteExpiresAt": "2026-09-24T09:00:00.000Z"
@@ -251,6 +252,7 @@ async fn list_streams_every_page() {
           "unread": true,
           "unreadCount": 0,
           "pinned": true,
+          "pinnedAt": "2026-09-24T09:00:00.000Z",
           "archived": true,
           "muted": true,
           "muteExpiresAt": "2026-09-24T09:00:00.000Z"
@@ -377,6 +379,7 @@ async fn list_streams_every_page() {
         "unread": true,
         "unreadCount": 0,
         "pinned": true,
+        "pinnedAt": "2026-09-24T09:00:00.000Z",
         "archived": true,
         "muted": true,
         "muteExpiresAt": "2026-09-24T09:00:00.000Z"
@@ -485,6 +488,7 @@ async fn list_streams_every_page() {
         "unread": true,
         "unreadCount": 0,
         "pinned": true,
+        "pinnedAt": "2026-09-24T09:00:00.000Z",
         "archived": true,
         "muted": true,
         "muteExpiresAt": "2026-09-24T09:00:00.000Z"
@@ -607,6 +611,7 @@ async fn list_fetches_one_page() {
           "unread": true,
           "unreadCount": 0,
           "pinned": true,
+          "pinnedAt": "2026-09-24T09:00:00.000Z",
           "archived": true,
           "muted": true,
           "muteExpiresAt": "2026-09-24T09:00:00.000Z"
@@ -730,6 +735,7 @@ async fn get() {
       "unread": true,
       "unreadCount": 0,
       "pinned": true,
+      "pinnedAt": "2026-09-24T09:00:00.000Z",
       "archived": true,
       "muted": true,
       "muteExpiresAt": "2026-09-24T09:00:00.000Z"
