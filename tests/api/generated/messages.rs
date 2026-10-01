@@ -64,6 +64,9 @@ async fn send() {
         "mimeType": "mimeType 1",
         "filename": "filename 1",
         "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
         "downloaded": true
       },
       "location": {
@@ -207,6 +210,9 @@ async fn send_retries_with_one_key() {
         "mimeType": "mimeType 1",
         "filename": "filename 1",
         "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
         "downloaded": true
       },
       "location": {
@@ -331,6 +337,9 @@ async fn list_streams_every_page() {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -423,6 +432,9 @@ async fn list_streams_every_page() {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -527,6 +539,9 @@ async fn list_streams_every_page() {
           "mimeType": "mimeType 1",
           "filename": "filename 1",
           "size": 1,
+          "width": 1,
+          "height": 1,
+          "durationSeconds": 1,
           "downloaded": true
         },
         "location": {
@@ -613,6 +628,9 @@ async fn list_streams_every_page() {
           "mimeType": "mimeType 1",
           "filename": "filename 1",
           "size": 1,
+          "width": 1,
+          "height": 1,
+          "durationSeconds": 1,
           "downloaded": true
         },
         "location": {
@@ -713,6 +731,9 @@ async fn list_fetches_one_page() {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -814,6 +835,9 @@ async fn get() {
         "mimeType": "mimeType 1",
         "filename": "filename 1",
         "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
         "downloaded": true
       },
       "location": {
@@ -959,6 +983,9 @@ async fn edit() {
         "mimeType": "mimeType 1",
         "filename": "filename 1",
         "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
         "downloaded": true
       },
       "location": {
@@ -1127,6 +1154,9 @@ async fn vote() {
         "mimeType": "mimeType 1",
         "filename": "filename 1",
         "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
         "downloaded": true
       },
       "location": {
@@ -1228,6 +1258,9 @@ async fn vote_retries_with_one_key() {
         "mimeType": "mimeType 1",
         "filename": "filename 1",
         "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
         "downloaded": true
       },
       "location": {
@@ -1328,6 +1361,9 @@ async fn star() {
         "mimeType": "mimeType 1",
         "filename": "filename 1",
         "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
         "downloaded": true
       },
       "location": {
@@ -1428,6 +1464,9 @@ async fn star_retries_with_one_key() {
         "mimeType": "mimeType 1",
         "filename": "filename 1",
         "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
         "downloaded": true
       },
       "location": {
@@ -1527,6 +1566,9 @@ async fn unstar() {
         "mimeType": "mimeType 1",
         "filename": "filename 1",
         "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
         "downloaded": true
       },
       "location": {
@@ -1627,6 +1669,9 @@ async fn unstar_retries_with_one_key() {
         "mimeType": "mimeType 1",
         "filename": "filename 1",
         "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
         "downloaded": true
       },
       "location": {

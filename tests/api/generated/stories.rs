@@ -43,6 +43,9 @@ async fn create() {
         "mimeType": "mimeType 1",
         "filename": "filename 1",
         "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
         "downloaded": true
       },
       "location": {
@@ -144,6 +147,9 @@ async fn create_retries_with_one_key() {
         "mimeType": "mimeType 1",
         "filename": "filename 1",
         "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
         "downloaded": true
       },
       "location": {
