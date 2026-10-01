@@ -1,0 +1,5 @@
+# Copied by wuapi-codegen from packages/sdk-codegen/templates/rust/rust-toolchain.toml. Do not edit here.
+
+[toolchain]
+channel = "stable"
+components = ["rustfmt", "clippy"]
