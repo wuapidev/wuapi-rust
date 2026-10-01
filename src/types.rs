@@ -652,13 +652,20 @@ string_enum! {
 /// A message's file. Received media is downloaded on demand by default (an account's `mediaAutoDownload`): until someone asks for it, the file stays on WhatsApp, `downloaded` is `false` and `url` is `https://api.wuapi.dev/v1/messages/{messageId}/media`, which needs your API key, downloads the file once through the number's proxy and redirects to it. Once stored, `downloaded` is `true` and `url` is the file itself. Tools that fetch `url` without headers (no-code automations) must send the API key (`Authorization: Bearer`) when `downloaded` is `false`, or call the endpoint with `redirect=false` and use the `url` it returns, which needs no key.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct MessageMedia {
-    /// `downloaded: true`: the file itself. Received: stored by wuapi; the URL does not expire and needs no API key, so anyone who has it can download the file: treat it as a secret. It stops working when the message is deleted. Sent: the URL you gave. `downloaded: false`: `GET /v1/messages/{messageId}/media` on api.wuapi.dev, which needs the API key (`Authorization: Bearer`) and answers a redirect to the file. `null` when wuapi has nothing to fetch the file with (some messages imported by history sync).
+    /// `downloaded: true`: the file itself. Received: stored by wuapi; the URL does not expire and needs no API key, so anyone who has it can download the file: treat it as a secret. It stops working when the message is deleted. Sent: the URL you gave. `downloaded: false`: `GET /v1/messages/{messageId}/media` on api.wuapi.dev, which needs the API key (`Authorization: Bearer`) and answers a redirect to the file. A file sent from the phone itself (`source: phone`) is handled like a received one. `null` when wuapi has nothing to fetch the file with. Messages imported by history sync (`source: history`) have no `media` at all: the import carries what a message was, not its file.
     pub url: Option<String>,
     #[serde(rename = "mimeType")]
     pub mime_type: Option<String>,
     pub filename: Option<String>,
-    /// Bytes, when known.
+    /// Bytes, when known: what WhatsApp declared for a received file, the stored file's size, or what was uploaded for a message sent through the API.
     pub size: Option<i64>,
+    /// Pixels, for images, video and stickers. Today only for an image sent through the API (JPEG, PNG or GIF), once it is `sent`; `null` otherwise, including every received file: the WhatsApp engine does not report the dimensions of received media yet.
+    pub width: Option<i64>,
+    /// Pixels. Set and `null` together with `width`.
+    pub height: Option<i64>,
+    /// Length of an audio, voice note or video, in seconds. `null` when unknown, which today is always: the WhatsApp engine does not report it yet.
+    #[serde(rename = "durationSeconds")]
+    pub duration_seconds: Option<i64>,
     /// `true`: `url` is the file. `false`: the file is still on WhatsApp; `url` fetches it on first use.
     pub downloaded: bool,
 }
@@ -2185,6 +2192,9 @@ pub struct Chat {
     pub profile_name: Option<String>,
     /// Direct chats: the contact's WhatsApp username (lowercase, without `@`), when WhatsApp shared one.
     pub username: Option<String>,
+    /// The id of the chat's picture: the contact's profile picture, or the group's. It changes when the picture does, so a client can keep a downloaded picture until this differs, and ask `GET …/contacts/{contactId}/picture` (with this chat's id) only when it does. wuapi learns it from `contact.picture_updated`, from every picture read or set through the API and from contact lookups, never by asking WhatsApp while listing. `null` when unknown (never observed), when the chat has no picture or it is hidden from this account, and for channels (their picture is `pictureUrl` of the channel).
+    #[serde(rename = "pictureId")]
+    pub picture_id: Option<String>,
     /// The chat's latest message. `null` when it is no longer stored.
     #[serde(rename = "lastMessage")]
     pub last_message: Option<Message>,
@@ -2337,7 +2347,7 @@ impl ContactLookupRequest {
     }
 }
 
-/// A WhatsApp user, as this account sees it. Fields WhatsApp did not send are `null`.
+/// A WhatsApp user, as this account sees it. The same object comes from three places, and each fills what it knows: the contact list and `GET …/contacts/{contactId}` read the account's address book as its phone synced it to wuapi (`savedName`, `profileName`, `businessName`, and the `username` and `pictureId` wuapi has seen; `about` and `deviceCount` are `null`); `POST …/contacts/lookup` asks WhatsApp (`about`, `pictureId`, `businessName`, `deviceCount`, `username`; `savedName` and `profileName` are `null`); `contact.updated` carries the field that changed. A field that source does not know is `null`.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Contact {
     /// Always `contact`.
@@ -2347,18 +2357,27 @@ pub struct Contact {
     /// The account this belongs to.
     #[serde(rename = "accountId")]
     pub account_id: String,
+    /// The contact's number in E.164 (`+584241112233`). `null` when WhatsApp hides it and the contact is known only by `lid`.
+    pub phone: Option<String>,
     /// The contact's `lid:<digits>` id, when WhatsApp gave one.
     pub lid: Option<String>,
+    /// The name the account saved the contact under in its phone's address book, else the contact's business name: the same value as `savedName` of its chat. Set by the contact list and `GET …/contacts/{contactId}`; `null` from a lookup and in `contact.updated`.
+    #[serde(rename = "savedName")]
+    pub saved_name: Option<String>,
+    /// The contact's WhatsApp profile name, as the account's phone last saw it. `null` when unknown, from a lookup and in `contact.updated`.
+    #[serde(rename = "profileName")]
+    pub profile_name: Option<String>,
     /// The contact's WhatsApp username (lowercase, without the `@`), when they set one and WhatsApp shared it with this account.
     pub username: Option<String>,
-    /// About text.
+    /// About text. Only a lookup and `contact.updated` set it.
     pub about: Option<String>,
+    /// The id of the contact's profile picture. It changes when the picture does, so a client can keep a downloaded picture until this differs. From a lookup: what WhatsApp answered. From the contact list: the id wuapi last saw (a `contact.picture_updated` event, a lookup, or `GET …/contacts/{contactId}/picture`). `null` when unknown, when the contact has no picture or when it is hidden from this account.
     #[serde(rename = "pictureId")]
     pub picture_id: Option<String>,
     /// Verified business name.
     #[serde(rename = "businessName")]
     pub business_name: Option<String>,
-    /// Devices linked to the contact.
+    /// Devices linked to the contact. Only a lookup sets it.
     #[serde(rename = "deviceCount")]
     pub device_count: Option<i64>,
 }
@@ -2379,7 +2398,7 @@ pub struct ContactList {
 pub struct Picture {
     /// Always `picture`.
     pub object: String,
-    /// Picture id.
+    /// Picture id. It changes when the picture does: the same value as `pictureId` on the chat and the contact.
     pub id: Option<String>,
     /// Download URL. `null` right after an upload.
     pub url: Option<String>,
@@ -3949,7 +3968,7 @@ pub struct ContactPresence {
     pub last_seen_at: Option<String>,
 }
 
-/// A contact or group picture changed or was removed.
+/// A contact or group picture changed or was removed. `pictureId` of the chat (and of the contact) follows.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PictureChange {
     /// Always `picture_change`.
@@ -5140,6 +5159,22 @@ pub type ChatsAddLabelParams = LabelAssignRequest;
 /// Params for `labels.upsert`.
 pub type LabelsUpsertParams = LabelUpsertRequest;
 
+/// Params for `contacts.list`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, Default)]
+pub struct ContactsListParams {
+    /// Search: the saved name, profile name, business name, username or number. The last word matches as a prefix. Results come best match first, not by name.
+    #[serde(default)]
+    pub q: Option<String>,
+    /// Page size, 1 to 100.
+    ///
+    /// Default: `50`.
+    #[serde(default)]
+    pub limit: Option<i64>,
+    /// Opaque cursor from a previous page's `nextCursor`. An invalid or expired cursor answers `400 invalid_request`.
+    #[serde(default)]
+    pub cursor: Option<String>,
+}
+
 /// Params for `contacts.check`.
 pub type ContactsCheckParams = ContactCheckRequest;
 
@@ -5476,6 +5511,18 @@ impl crate::pagination::CursorPage for MessageList {
 
 impl crate::pagination::CursorPage for ChatList {
     type Item = Chat;
+
+    fn next_cursor(&self) -> Option<&str> {
+        self.next_cursor.as_deref()
+    }
+
+    fn into_items(self) -> Vec<Self::Item> {
+        self.items
+    }
+}
+
+impl crate::pagination::CursorPage for ContactList {
+    type Item = Contact;
 
     fn next_cursor(&self) -> Option<&str> {
         self.next_cursor.as_deref()

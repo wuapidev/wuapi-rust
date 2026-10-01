@@ -43,6 +43,7 @@ async fn list_streams_every_page() {
           "savedName": "savedName 1",
           "profileName": "profileName 1",
           "username": "username 1",
+          "pictureId": "pictureId 1",
           "lastMessage": {
             "object": "message",
             "id": "id 1",
@@ -63,6 +64,9 @@ async fn list_streams_every_page() {
               "mimeType": "mimeType 1",
               "filename": "filename 1",
               "size": 1,
+              "width": 1,
+              "height": 1,
+              "durationSeconds": 1,
               "downloaded": true
             },
             "location": {
@@ -153,6 +157,7 @@ async fn list_streams_every_page() {
           "savedName": "savedName 1",
           "profileName": "profileName 1",
           "username": "username 1",
+          "pictureId": "pictureId 1",
           "lastMessage": {
             "object": "message",
             "id": "id 1",
@@ -173,6 +178,9 @@ async fn list_streams_every_page() {
               "mimeType": "mimeType 1",
               "filename": "filename 1",
               "size": 1,
+              "width": 1,
+              "height": 1,
+              "durationSeconds": 1,
               "downloaded": true
             },
             "location": {
@@ -275,6 +283,7 @@ async fn list_streams_every_page() {
         "savedName": "savedName 1",
         "profileName": "profileName 1",
         "username": "username 1",
+        "pictureId": "pictureId 1",
         "lastMessage": {
           "object": "message",
           "id": "id 1",
@@ -295,6 +304,9 @@ async fn list_streams_every_page() {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -379,6 +391,7 @@ async fn list_streams_every_page() {
         "savedName": "savedName 1",
         "profileName": "profileName 1",
         "username": "username 1",
+        "pictureId": "pictureId 1",
         "lastMessage": {
           "object": "message",
           "id": "id 1",
@@ -399,6 +412,9 @@ async fn list_streams_every_page() {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -497,6 +513,7 @@ async fn list_fetches_one_page() {
           "savedName": "savedName 1",
           "profileName": "profileName 1",
           "username": "username 1",
+          "pictureId": "pictureId 1",
           "lastMessage": {
             "object": "message",
             "id": "id 1",
@@ -517,6 +534,9 @@ async fn list_fetches_one_page() {
               "mimeType": "mimeType 1",
               "filename": "filename 1",
               "size": 1,
+              "width": 1,
+              "height": 1,
+              "durationSeconds": 1,
               "downloaded": true
             },
             "location": {
@@ -616,6 +636,7 @@ async fn get() {
       "savedName": "savedName 1",
       "profileName": "profileName 1",
       "username": "username 1",
+      "pictureId": "pictureId 1",
       "lastMessage": {
         "object": "message",
         "id": "id 1",
@@ -636,6 +657,9 @@ async fn get() {
           "mimeType": "mimeType 1",
           "filename": "filename 1",
           "size": 1,
+          "width": 1,
+          "height": 1,
+          "durationSeconds": 1,
           "downloaded": true
         },
         "location": {

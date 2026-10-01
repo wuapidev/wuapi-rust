@@ -15,6 +15,42 @@ impl ContactsResource {
         Self { http }
     }
 
+    /// List contacts
+    ///
+    /// The account's contacts, ordered by saved name: its address book as the linked phone synced it to wuapi. Read from what wuapi stored, without asking WhatsApp, so it works while the account is not `ready`.
+    ///
+    /// What is in it: every contact the phone holds a saved name or a business name for. WhatsApp sends the address book to a linked device when the number is linked and again whenever it resyncs it, and wuapi stores it then, and after that every contact the phone adds, renames or deletes, as it happens. So the list is empty until the first sync after linking finishes (seconds to a few minutes), a contact deleted on the phone leaves the list, and people the account only chatted with, without saving them, are not in it: those are in `GET …/chats`.
+    ///
+    /// `about` and `deviceCount` are `null` here (ask `POST …/contacts/lookup`); `username` and `pictureId` are what wuapi has seen so far. With `q`, the contacts that match, best match first.
+    ///
+    /// `GET /v1/accounts/{accountId}/contacts`
+    ///
+    /// Safe to repeat: retried on timeouts, network errors, `429` and `5xx`.
+    pub fn list(
+        &self,
+        account_id: &str,
+        params: types::ContactsListParams,
+    ) -> Paginator<types::ContactList> {
+        let parts = RequestParts::new(Method::Get, format!("/v1/accounts/{}/contacts", encode_path(account_id)))
+            .query_opt("q", params.q.as_ref())
+            .query_opt("limit", params.limit.as_ref())
+            .retryable();
+        Paginator::new(self.http.clone(), parts, "cursor", params.cursor)
+    }
+
+    /// Get a contact
+    ///
+    /// One contact of the account's address book, by its number or its `lid:<digits>` id, from what wuapi stored (see `GET …/contacts` for what that holds). A number or id the address book does not hold answers `404 not_found`, even when the account has a chat with it: `POST …/contacts/lookup` asks WhatsApp about any number.
+    ///
+    /// `GET /v1/accounts/{accountId}/contacts/{contactId}`
+    ///
+    /// Safe to repeat: retried on timeouts, network errors, `429` and `5xx`.
+    pub fn get(&self, account_id: &str, contact_id: &str) -> Request<types::Contact> {
+        let parts = RequestParts::new(Method::Get, format!("/v1/accounts/{}/contacts/{}", encode_path(account_id), encode_path(contact_id)))
+            .retryable();
+        self.http.request(parts)
+    }
+
     /// Check numbers on WhatsApp
     ///
     /// Which numbers have WhatsApp. Read-only: works for a suspended project.
@@ -35,7 +71,7 @@ impl ContactsResource {
 
     /// Look up contacts
     ///
-    /// About text, picture id, verified business name and device count. Read-only.
+    /// About text, picture id, verified business name, username and device count, asked from WhatsApp for 1 to 50 contacts. Read-only. `savedName` and `profileName` are `null` here: the account's address book is `GET …/contacts`. The picture ids and usernames it returns are kept on the chats and contacts wuapi stores.
     ///
     /// `POST /v1/accounts/{accountId}/contacts/lookup`
     ///
@@ -53,7 +89,9 @@ impl ContactsResource {
 
     /// Get a profile picture
     ///
-    /// The contact's profile picture, if this account can see it.
+    /// The profile picture of a contact, or the picture of a group: `{contactId}` also takes a group id (`120363041234567890@g.us`), which is how a chat list shows group pictures. `id` is the picture's id and `url` a WhatsApp URL that expires, so download it and keep it by `id`. `404 picture_not_found` when it has no picture or this account may not see it (the contact's privacy settings); a community's own picture may answer that too. A channel id is passed to WhatsApp as it is, with no guarantee of an answer: a channel's picture is `pictureUrl` on the channel.
+    ///
+    /// What this call learns is kept: `pictureId` of the chat and of the contact follows it, so check that field before asking again.
     ///
     /// `GET /v1/accounts/{accountId}/contacts/{contactId}/picture`
     ///

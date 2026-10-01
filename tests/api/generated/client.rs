@@ -1179,6 +1179,9 @@ mod messages {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -1322,6 +1325,9 @@ mod messages {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -1446,6 +1452,9 @@ mod messages {
                 "mimeType": "mimeType 1",
                 "filename": "filename 1",
                 "size": 1,
+                "width": 1,
+                "height": 1,
+                "durationSeconds": 1,
                 "downloaded": true
               },
               "location": {
@@ -1538,6 +1547,9 @@ mod messages {
                 "mimeType": "mimeType 1",
                 "filename": "filename 1",
                 "size": 1,
+                "width": 1,
+                "height": 1,
+                "durationSeconds": 1,
                 "downloaded": true
               },
               "location": {
@@ -1642,6 +1654,9 @@ mod messages {
               "mimeType": "mimeType 1",
               "filename": "filename 1",
               "size": 1,
+              "width": 1,
+              "height": 1,
+              "durationSeconds": 1,
               "downloaded": true
             },
             "location": {
@@ -1728,6 +1743,9 @@ mod messages {
               "mimeType": "mimeType 1",
               "filename": "filename 1",
               "size": 1,
+              "width": 1,
+              "height": 1,
+              "durationSeconds": 1,
               "downloaded": true
             },
             "location": {
@@ -1828,6 +1846,9 @@ mod messages {
                 "mimeType": "mimeType 1",
                 "filename": "filename 1",
                 "size": 1,
+                "width": 1,
+                "height": 1,
+                "durationSeconds": 1,
                 "downloaded": true
               },
               "location": {
@@ -1929,6 +1950,9 @@ mod messages {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -2074,6 +2098,9 @@ mod messages {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -2242,6 +2269,9 @@ mod messages {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -2343,6 +2373,9 @@ mod messages {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -2443,6 +2476,9 @@ mod messages {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -2543,6 +2579,9 @@ mod messages {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -2642,6 +2681,9 @@ mod messages {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -2742,6 +2784,9 @@ mod messages {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -2885,6 +2930,9 @@ mod stories {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -2986,6 +3034,9 @@ mod stories {
             "mimeType": "mimeType 1",
             "filename": "filename 1",
             "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
             "downloaded": true
           },
           "location": {
@@ -3083,6 +3134,7 @@ mod chats {
               "savedName": "savedName 1",
               "profileName": "profileName 1",
               "username": "username 1",
+              "pictureId": "pictureId 1",
               "lastMessage": {
                 "object": "message",
                 "id": "id 1",
@@ -3103,6 +3155,9 @@ mod chats {
                   "mimeType": "mimeType 1",
                   "filename": "filename 1",
                   "size": 1,
+                  "width": 1,
+                  "height": 1,
+                  "durationSeconds": 1,
                   "downloaded": true
                 },
                 "location": {
@@ -3193,6 +3248,7 @@ mod chats {
               "savedName": "savedName 1",
               "profileName": "profileName 1",
               "username": "username 1",
+              "pictureId": "pictureId 1",
               "lastMessage": {
                 "object": "message",
                 "id": "id 1",
@@ -3213,6 +3269,9 @@ mod chats {
                   "mimeType": "mimeType 1",
                   "filename": "filename 1",
                   "size": 1,
+                  "width": 1,
+                  "height": 1,
+                  "durationSeconds": 1,
                   "downloaded": true
                 },
                 "location": {
@@ -3315,6 +3374,7 @@ mod chats {
             "savedName": "savedName 1",
             "profileName": "profileName 1",
             "username": "username 1",
+            "pictureId": "pictureId 1",
             "lastMessage": {
               "object": "message",
               "id": "id 1",
@@ -3335,6 +3395,9 @@ mod chats {
                 "mimeType": "mimeType 1",
                 "filename": "filename 1",
                 "size": 1,
+                "width": 1,
+                "height": 1,
+                "durationSeconds": 1,
                 "downloaded": true
               },
               "location": {
@@ -3419,6 +3482,7 @@ mod chats {
             "savedName": "savedName 1",
             "profileName": "profileName 1",
             "username": "username 1",
+            "pictureId": "pictureId 1",
             "lastMessage": {
               "object": "message",
               "id": "id 1",
@@ -3439,6 +3503,9 @@ mod chats {
                 "mimeType": "mimeType 1",
                 "filename": "filename 1",
                 "size": 1,
+                "width": 1,
+                "height": 1,
+                "durationSeconds": 1,
                 "downloaded": true
               },
               "location": {
@@ -3537,6 +3604,7 @@ mod chats {
               "savedName": "savedName 1",
               "profileName": "profileName 1",
               "username": "username 1",
+              "pictureId": "pictureId 1",
               "lastMessage": {
                 "object": "message",
                 "id": "id 1",
@@ -3557,6 +3625,9 @@ mod chats {
                   "mimeType": "mimeType 1",
                   "filename": "filename 1",
                   "size": 1,
+                  "width": 1,
+                  "height": 1,
+                  "durationSeconds": 1,
                   "downloaded": true
                 },
                 "location": {
@@ -3656,6 +3727,7 @@ mod chats {
           "savedName": "savedName 1",
           "profileName": "profileName 1",
           "username": "username 1",
+          "pictureId": "pictureId 1",
           "lastMessage": {
             "object": "message",
             "id": "id 1",
@@ -3676,6 +3748,9 @@ mod chats {
               "mimeType": "mimeType 1",
               "filename": "filename 1",
               "size": 1,
+              "width": 1,
+              "height": 1,
+              "durationSeconds": 1,
               "downloaded": true
             },
             "location": {
@@ -4169,6 +4244,153 @@ mod contacts {
     use super::*;
 
     #[tokio::test]
+    async fn list_streams_every_page() {
+        let first = support::json(r#"{
+          "object": "list",
+          "items": [
+            {
+              "object": "contact",
+              "id": "id 1",
+              "accountId": "accountId 1",
+              "phone": "phone 1",
+              "lid": "lid 1",
+              "savedName": "savedName 1",
+              "profileName": "profileName 1",
+              "username": "username 1",
+              "about": "about 1",
+              "pictureId": "pictureId 1",
+              "businessName": "businessName 1",
+              "deviceCount": 1
+            }
+          ],
+          "nextCursor": "cursor_2"
+        }"#);
+        let last = support::json(r#"{
+          "object": "list",
+          "items": [
+            {
+              "object": "contact",
+              "id": "id 1",
+              "accountId": "accountId 1",
+              "phone": "phone 1",
+              "lid": "lid 1",
+              "savedName": "savedName 1",
+              "profileName": "profileName 1",
+              "username": "username 1",
+              "about": "about 1",
+              "pictureId": "pictureId 1",
+              "businessName": "businessName 1",
+              "deviceCount": 1
+            }
+          ],
+          "nextCursor": null
+        }"#);
+        let api = support::MockApi::start(vec![
+            support::Reply::json(200, first),
+            support::Reply::json(200, last),
+        ])
+        .await;
+        let params: types::ContactsListParams = support::from_json(r#"{"q":"q 1","limit":50,"cursor":"cursor 1"}"#);
+        let items = api.client().contacts().list("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", params).to_vec().await.unwrap();
+        support::assert_json(&items, &support::json(r#"[
+          {
+            "object": "contact",
+            "id": "id 1",
+            "accountId": "accountId 1",
+            "phone": "phone 1",
+            "lid": "lid 1",
+            "savedName": "savedName 1",
+            "profileName": "profileName 1",
+            "username": "username 1",
+            "about": "about 1",
+            "pictureId": "pictureId 1",
+            "businessName": "businessName 1",
+            "deviceCount": 1
+          },
+          {
+            "object": "contact",
+            "id": "id 1",
+            "accountId": "accountId 1",
+            "phone": "phone 1",
+            "lid": "lid 1",
+            "savedName": "savedName 1",
+            "profileName": "profileName 1",
+            "username": "username 1",
+            "about": "about 1",
+            "pictureId": "pictureId 1",
+            "businessName": "businessName 1",
+            "deviceCount": 1
+          }
+        ]"#));
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 2);
+        assert_eq!(calls[0].method, "GET");
+        assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/contacts");
+        assert_eq!(calls[0].query, support::pairs(&[("q", "q 1"), ("limit", "50"), ("cursor", "cursor 1")]));
+        assert_eq!(calls[1].query, support::pairs(&[("q", "q 1"), ("limit", "50"), ("cursor", "cursor_2")]));
+    }
+
+    #[tokio::test]
+    async fn list_fetches_one_page() {
+        let page = support::json(r#"{
+          "object": "list",
+          "items": [
+            {
+              "object": "contact",
+              "id": "id 1",
+              "accountId": "accountId 1",
+              "phone": "phone 1",
+              "lid": "lid 1",
+              "savedName": "savedName 1",
+              "profileName": "profileName 1",
+              "username": "username 1",
+              "about": "about 1",
+              "pictureId": "pictureId 1",
+              "businessName": "businessName 1",
+              "deviceCount": 1
+            }
+          ],
+          "nextCursor": null
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(200, page.clone())]).await;
+        let result = api.client().contacts().list("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", Default::default()).page().await.unwrap();
+        support::assert_json(&result, &page);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "GET");
+        assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/contacts");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+    }
+
+    #[tokio::test]
+    async fn get() {
+        let response = support::json(r#"{
+          "object": "contact",
+          "id": "id 1",
+          "accountId": "accountId 1",
+          "phone": "phone 1",
+          "lid": "lid 1",
+          "savedName": "savedName 1",
+          "profileName": "profileName 1",
+          "username": "username 1",
+          "about": "about 1",
+          "pictureId": "pictureId 1",
+          "businessName": "businessName 1",
+          "deviceCount": 1
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+        let result = api.client().contacts().get("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "+584241112233").await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "GET");
+        assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/contacts/%2B584241112233");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        assert!(calls[0].body.is_none());
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+    }
+
+    #[tokio::test]
     async fn check() {
         let response = support::json(r#"{
           "object": "list",
@@ -4234,7 +4456,10 @@ mod contacts {
               "object": "contact",
               "id": "id 1",
               "accountId": "accountId 1",
+              "phone": "phone 1",
               "lid": "lid 1",
+              "savedName": "savedName 1",
+              "profileName": "profileName 1",
               "username": "username 1",
               "about": "about 1",
               "pictureId": "pictureId 1",
@@ -4266,7 +4491,10 @@ mod contacts {
               "object": "contact",
               "id": "id 1",
               "accountId": "accountId 1",
+              "phone": "phone 1",
               "lid": "lid 1",
+              "savedName": "savedName 1",
+              "profileName": "profileName 1",
               "username": "username 1",
               "about": "about 1",
               "pictureId": "pictureId 1",
