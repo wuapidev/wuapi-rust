@@ -111,6 +111,7 @@ mod accounts {
               },
               "historySync": "none",
               "mediaAutoDownload": "none",
+              "imageQuality": "standard",
               "metadata": {
                 "key": "value 1"
               },
@@ -161,6 +162,7 @@ mod accounts {
               },
               "historySync": "none",
               "mediaAutoDownload": "none",
+              "imageQuality": "standard",
               "metadata": {
                 "key": "value 1"
               },
@@ -216,6 +218,7 @@ mod accounts {
             },
             "historySync": "none",
             "mediaAutoDownload": "none",
+            "imageQuality": "standard",
             "metadata": {
               "key": "value 1"
             },
@@ -260,6 +263,7 @@ mod accounts {
             },
             "historySync": "none",
             "mediaAutoDownload": "none",
+            "imageQuality": "standard",
             "metadata": {
               "key": "value 1"
             },
@@ -318,6 +322,7 @@ mod accounts {
               },
               "historySync": "none",
               "mediaAutoDownload": "none",
+              "imageQuality": "standard",
               "metadata": {
                 "key": "value 1"
               },
@@ -377,6 +382,7 @@ mod accounts {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "metadata": {
             "key": "value 1"
           },
@@ -456,6 +462,7 @@ mod accounts {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "metadata": {
             "key": "value 1"
           },
@@ -524,6 +531,7 @@ mod accounts {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "metadata": {
             "key": "value 1"
           },
@@ -582,6 +590,7 @@ mod accounts {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "metadata": {
             "key": "value 1"
           },
@@ -608,6 +617,7 @@ mod accounts {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "proxyLocation": {
             "country": "country 1",
             "city": "city 1",
@@ -638,6 +648,7 @@ mod accounts {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "proxyLocation": {
             "country": "country 1",
             "city": "city 1",
@@ -685,6 +696,7 @@ mod accounts {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "metadata": {
             "key": "value 1"
           },
@@ -729,6 +741,7 @@ mod accounts {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "proxyLocation": {
             "country": "country 1",
             "city": "city 1",
@@ -791,6 +804,7 @@ mod accounts {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "metadata": {
             "key": "value 1"
           },
@@ -849,6 +863,7 @@ mod accounts {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "metadata": {
             "key": "value 1"
           },
@@ -906,6 +921,7 @@ mod accounts {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "metadata": {
             "key": "value 1"
           },
@@ -964,6 +980,7 @@ mod accounts {
           },
           "historySync": "none",
           "mediaAutoDownload": "none",
+          "imageQuality": "standard",
           "metadata": {
             "key": "value 1"
           },

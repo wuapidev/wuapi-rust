@@ -3,7 +3,7 @@
 //! Constants of this crate and of the API.
 
 /// The version of this crate.
-pub const VERSION: &str = "0.8.0";
+pub const VERSION: &str = "0.9.0";
 /// The name of this crate.
 pub const PACKAGE_NAME: &str = "wuapi";
 /// The API's production URL.
@@ -15,4 +15,4 @@ pub const PROJECT_HEADER: &str = "Wuapi-Project";
 /// Header that makes a request safe to retry.
 pub const IDEMPOTENCY_HEADER: &str = "Idempotency-Key";
 /// The `User-Agent` this crate sends.
-pub const USER_AGENT: &str = "wuapi-rust/0.8.0";
+pub const USER_AGENT: &str = "wuapi-rust/0.9.0";
