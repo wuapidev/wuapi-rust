@@ -2062,6 +2062,63 @@ pub struct ReadReceiptsRequest {
     pub message_ids: Option<Vec<String>>,
 }
 
+/// A chat of an account: a conversation with a contact, a group or a channel that wuapi holds at least one message of. Its name and latest message come from what wuapi stored; `unread`, `unreadCount`, `pinned`, `archived` and `muted` are WhatsApp's state of the chat, the one the chat actions change and `chat.updated` reports. wuapi learns that state from live changes (made through the API, on the phone or on another device), not from the sync after linking, so a state it has never observed is `null`, not `false`. The account's stories are not a chat.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Chat {
+    /// Always `chat`.
+    pub object: String,
+    /// The chat id, as `chatId` on its messages: the contact id of a direct chat (`+584241112233` or `lid:<digits>`), the group id or the channel id.
+    pub id: String,
+    /// The project of the chat's account. `null` when it is in none.
+    #[serde(rename = "projectId")]
+    pub project_id: Option<String>,
+    /// The account this belongs to.
+    #[serde(rename = "accountId")]
+    pub account_id: String,
+    pub r#type: ChatType,
+    /// The name to show: `savedName` when there is one, else the group's name or the contact's `profileName`. `null` when none is known yet.
+    pub name: Option<String>,
+    /// Direct chats: the name the account saved the contact under in its phone's address book, else the contact's business name. `null` when it has neither, and for groups and channels.
+    #[serde(rename = "savedName")]
+    pub saved_name: Option<String>,
+    /// Direct chats: the contact's WhatsApp profile name, as it came with their messages. `null` when unknown, and for groups and channels.
+    #[serde(rename = "profileName")]
+    pub profile_name: Option<String>,
+    /// Direct chats: the contact's WhatsApp username (lowercase, without `@`), when WhatsApp shared one.
+    pub username: Option<String>,
+    /// The chat's latest message. `null` when it is no longer stored.
+    #[serde(rename = "lastMessage")]
+    pub last_message: Option<Message>,
+    /// When the latest message was sent or received. Lists are ordered by it, newest first.
+    #[serde(rename = "lastMessageAt")]
+    pub last_message_at: String,
+    /// The chat has unread messages or was marked as unread on WhatsApp. `null` when unknown.
+    pub unread: Option<bool>,
+    /// Messages received and not read on WhatsApp yet: counted from the messages wuapi stored, and back to 0 when the account replies, sends read receipts, marks the chat as read or reads it on the phone. `0` with `unread: true` is a chat marked as unread. `null` when unknown: a chat that existed before wuapi kept this count or that only holds imported history, until it is read for the first time.
+    #[serde(rename = "unreadCount")]
+    pub unread_count: Option<i64>,
+    /// Pinned on WhatsApp. `null` when never observed.
+    pub pinned: Option<bool>,
+    /// Archived on WhatsApp. `null` when never observed.
+    pub archived: Option<bool>,
+    /// Muted on WhatsApp right now (a timed mute that ran out is `false`). `null` when never observed.
+    pub muted: Option<bool>,
+    /// When the mute ends. `null` when the chat is not muted, is muted with no end, or its mute was never observed.
+    #[serde(rename = "muteExpiresAt")]
+    pub mute_expires_at: Option<String>,
+}
+
+/// A page of `Chat` objects.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ChatList {
+    /// Always `list`.
+    pub object: String,
+    pub items: Vec<Chat>,
+    /// Pass as `cursor` to get the next page. `null` on the last page.
+    #[serde(rename = "nextCursor")]
+    pub next_cursor: Option<String>,
+}
+
 /// Read receipts sent.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ChatRead {
@@ -4797,6 +4854,18 @@ impl From<WebhookTestEvent> for Event {
     }
 }
 
+string_enum! {
+    pub enum ListChatsType {
+        /// `direct`
+        Direct = "direct",
+        /// `group`
+        Group = "group",
+        /// `channel`
+        Channel = "channel",
+        @unknown Unknown,
+    }
+}
+
 /// Params for `accounts.list`.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, Default)]
 pub struct AccountsListParams {
@@ -4899,6 +4968,35 @@ pub type MessagesAddLabelParams = LabelAssignRequest;
 
 /// Params for `stories.create`.
 pub type StoriesCreateParams = StoryCreateRequest;
+
+/// Params for `chats.list`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, Default)]
+pub struct ChatsListParams {
+    /// `true`: only the chats WhatsApp reported as archived. `false`: every other chat, including those whose `archived` is `null`.
+    #[serde(default)]
+    pub archived: Option<bool>,
+    /// `true`: only the chats with unread messages or marked as unread. `false`: every other chat, including those whose `unread` is `null`.
+    #[serde(default)]
+    pub unread: Option<bool>,
+    /// Only chats of this type.
+    ///
+    /// - `direct`: Chats with one contact.
+    /// - `group`: Groups.
+    /// - `channel`: Channels.
+    #[serde(default)]
+    pub r#type: Option<ListChatsType>,
+    /// Search: the contact's saved name, profile name, username or number, the group's name, or words of the chat's recent messages. The last word matches as a prefix. Results come best match first, not by date.
+    #[serde(default)]
+    pub q: Option<String>,
+    /// Page size, 1 to 100.
+    ///
+    /// Default: `50`.
+    #[serde(default)]
+    pub limit: Option<i64>,
+    /// Opaque cursor from a previous page's `nextCursor`. An invalid or expired cursor answers `400 invalid_request`.
+    #[serde(default)]
+    pub cursor: Option<String>,
+}
 
 /// Params for `chats.send_presence`.
 pub type ChatsSendPresenceParams = ChatPresenceRequest;
@@ -5252,6 +5350,18 @@ impl crate::pagination::CursorPage for ProxyLocationItemList {
 
 impl crate::pagination::CursorPage for MessageList {
     type Item = Message;
+
+    fn next_cursor(&self) -> Option<&str> {
+        self.next_cursor.as_deref()
+    }
+
+    fn into_items(self) -> Vec<Self::Item> {
+        self.items
+    }
+}
+
+impl crate::pagination::CursorPage for ChatList {
+    type Item = Chat;
 
     fn next_cursor(&self) -> Option<&str> {
         self.next_cursor.as_deref()
