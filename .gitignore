@@ -1,0 +1,4 @@
+# Copied by wuapi-codegen from packages/sdk-codegen/templates/rust/gitignore. Do not edit here.
+
+/target
+Cargo.lock
