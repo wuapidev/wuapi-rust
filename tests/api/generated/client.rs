@@ -3133,6 +3133,142 @@ mod stories {
     }
 }
 
+mod uploads {
+    use super::*;
+
+    #[tokio::test]
+    async fn create() {
+        let response = support::json(r#"{
+          "object": "upload",
+          "id": "id 1",
+          "projectId": "projectId 1",
+          "status": "pending",
+          "mimeType": "mimeType 1",
+          "filename": "filename 1",
+          "size": 1,
+          "uploadUrl": "uploadUrl 1",
+          "expiresAt": "2026-09-24T09:00:00.000Z",
+          "createdAt": "2026-09-24T09:00:00.000Z"
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(201, response.clone())]).await;
+        let params: types::UploadsCreateParams = support::from_json(r#"{"mimeType":"mimeType 1","size":1,"filename":"filename 1"}"#);
+        let result = api.client().uploads().create(params).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "POST");
+        assert_eq!(calls[0].path, "/v1/uploads");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        support::assert_json(&calls[0].body, &support::json(r#"{"mimeType":"mimeType 1","size":1,"filename":"filename 1"}"#));
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_some_and(|key| !key.is_empty()));
+    }
+
+    #[tokio::test]
+    async fn create_retries_with_one_key() {
+        let response = support::json(r#"{
+          "object": "upload",
+          "id": "id 1",
+          "projectId": "projectId 1",
+          "status": "pending",
+          "mimeType": "mimeType 1",
+          "filename": "filename 1",
+          "size": 1,
+          "uploadUrl": "uploadUrl 1",
+          "expiresAt": "2026-09-24T09:00:00.000Z",
+          "createdAt": "2026-09-24T09:00:00.000Z"
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::status(503), support::Reply::json(201, response.clone())]).await;
+        let params: types::UploadsCreateParams = support::from_json(r#"{"mimeType":"mimeType 1","size":1,"filename":"filename 1"}"#);
+        let result = api.client().uploads().create(params).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 2);
+        let key = calls[0].header(sdk::IDEMPOTENCY_HEADER).unwrap();
+        assert!(!key.is_empty());
+        assert_eq!(calls[1].header(sdk::IDEMPOTENCY_HEADER), Some(key));
+        assert_eq!(calls[0].body, calls[1].body);
+    }
+
+    #[tokio::test]
+    async fn get() {
+        let response = support::json(r#"{
+          "object": "upload",
+          "id": "id 1",
+          "projectId": "projectId 1",
+          "status": "pending",
+          "mimeType": "mimeType 1",
+          "filename": "filename 1",
+          "size": 1,
+          "uploadUrl": "uploadUrl 1",
+          "expiresAt": "2026-09-24T09:00:00.000Z",
+          "createdAt": "2026-09-24T09:00:00.000Z"
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+        let result = api.client().uploads().get("u57c1k9w2sqd7k3v8x1n5ybr6t4hjp2e").await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "GET");
+        assert_eq!(calls[0].path, "/v1/uploads/u57c1k9w2sqd7k3v8x1n5ybr6t4hjp2e");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        assert!(calls[0].body.is_none());
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+    }
+
+    #[tokio::test]
+    async fn complete() {
+        let response = support::json(r#"{
+          "object": "upload",
+          "id": "id 1",
+          "projectId": "projectId 1",
+          "status": "pending",
+          "mimeType": "mimeType 1",
+          "filename": "filename 1",
+          "size": 1,
+          "uploadUrl": "uploadUrl 1",
+          "expiresAt": "2026-09-24T09:00:00.000Z",
+          "createdAt": "2026-09-24T09:00:00.000Z"
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+        let params: types::UploadsCompleteParams = support::from_json(r#"{"storageId":"storageId 1"}"#);
+        let result = api.client().uploads().complete("u57c1k9w2sqd7k3v8x1n5ybr6t4hjp2e", params).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "POST");
+        assert_eq!(calls[0].path, "/v1/uploads/u57c1k9w2sqd7k3v8x1n5ybr6t4hjp2e/complete");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        support::assert_json(&calls[0].body, &support::json(r#"{"storageId":"storageId 1"}"#));
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_some_and(|key| !key.is_empty()));
+    }
+
+    #[tokio::test]
+    async fn complete_retries_with_one_key() {
+        let response = support::json(r#"{
+          "object": "upload",
+          "id": "id 1",
+          "projectId": "projectId 1",
+          "status": "pending",
+          "mimeType": "mimeType 1",
+          "filename": "filename 1",
+          "size": 1,
+          "uploadUrl": "uploadUrl 1",
+          "expiresAt": "2026-09-24T09:00:00.000Z",
+          "createdAt": "2026-09-24T09:00:00.000Z"
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::status(503), support::Reply::json(200, response.clone())]).await;
+        let params: types::UploadsCompleteParams = support::from_json(r#"{"storageId":"storageId 1"}"#);
+        let result = api.client().uploads().complete("u57c1k9w2sqd7k3v8x1n5ybr6t4hjp2e", params).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 2);
+        let key = calls[0].header(sdk::IDEMPOTENCY_HEADER).unwrap();
+        assert!(!key.is_empty());
+        assert_eq!(calls[1].header(sdk::IDEMPOTENCY_HEADER), Some(key));
+        assert_eq!(calls[0].body, calls[1].body);
+    }
+}
+
 mod chats {
     use super::*;
 

@@ -674,12 +674,12 @@ string_enum! {
 /// A message's file. Received media is downloaded on demand by default (an account's `mediaAutoDownload`): until someone asks for it, the file stays on WhatsApp, `downloaded` is `false` and `url` is `https://api.wuapi.dev/v1/messages/{messageId}/media`, which needs your API key, downloads the file once through the number's proxy and redirects to it. Once stored, `downloaded` is `true` and `url` is the file itself. Tools that fetch `url` without headers (no-code automations) must send the API key (`Authorization: Bearer`) when `downloaded` is `false`, or call the endpoint with `redirect=false` and use the `url` it returns, which needs no key.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct MessageMedia {
-    /// `downloaded: true`: the file itself. Received: stored by wuapi; the URL does not expire and needs no API key, so anyone who has it can download the file: treat it as a secret. It stops working when the message is deleted. Sent: the URL you gave. `downloaded: false`: `GET /v1/messages/{messageId}/media` on api.wuapi.dev, which needs the API key (`Authorization: Bearer`) and answers a redirect to the file. A file sent from the phone itself (`source: phone`) is handled like a received one. `null` when wuapi has nothing to fetch the file with. Messages imported by history sync (`source: history`) have no `media` at all: the import carries what a message was, not its file.
+    /// `downloaded: true`: the file itself. Received: stored by wuapi; the URL does not expire and needs no API key, so anyone who has it can download the file: treat it as a secret. It stops working when the message is deleted. Sent: the URL you gave, or, for a file sent with `media.uploadId`, the stored file (the same kind of URL as a received file's, working until the message is deleted). `downloaded: false`: `GET /v1/messages/{messageId}/media` on api.wuapi.dev, which needs the API key (`Authorization: Bearer`) and answers a redirect to the file. A file sent from the phone itself (`source: phone`) is handled like a received one. `null` when wuapi has nothing to fetch the file with. Messages imported by history sync (`source: history`) have no `media` at all: the import carries what a message was, not its file.
     pub url: Option<String>,
     #[serde(rename = "mimeType")]
     pub mime_type: Option<String>,
     pub filename: Option<String>,
-    /// Bytes, when known: what WhatsApp declared for a received file, the stored file's size, or what was uploaded for a message sent through the API.
+    /// Bytes, when known: what WhatsApp declared for a received file, the stored file's size, or what was uploaded for a message sent through the API (known at once for a file sent with `media.uploadId`, once `sent` for a URL).
     pub size: Option<i64>,
     /// Pixels, for images, video and stickers. Today only for an image sent through the API (JPEG, PNG or GIF), once it is `sent`; `null` otherwise, including every received file: the WhatsApp engine does not report the dimensions of received media yet.
     pub width: Option<i64>,
@@ -911,9 +911,32 @@ integer_enum! {
     }
 }
 
-/// A file to send, fetched by our servers.
+/// A file to send: exactly one of `url` (a public URL our servers download) or `uploadId` (a file uploaded with `POST /v1/uploads`).
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct SendMedia {
+#[serde(untagged)]
+#[non_exhaustive]
+pub enum SendMedia {
+    SendMediaUrl(SendMediaUrl),
+    SendMediaUpload(SendMediaUpload),
+    /// A shape this version of the SDK does not know.
+    Unknown(serde_json::Value),
+}
+
+impl From<SendMediaUrl> for SendMedia {
+    fn from(value: SendMediaUrl) -> Self {
+        Self::SendMediaUrl(value)
+    }
+}
+
+impl From<SendMediaUpload> for SendMedia {
+    fn from(value: SendMediaUpload) -> Self {
+        Self::SendMediaUpload(value)
+    }
+}
+
+/// A file to send, fetched by our servers from a URL.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct SendMediaUrl {
     /// Public `http(s)` URL our servers download (up to 5 redirects, 60 seconds, 100 MB), as `wuapi-media-fetcher/1.0 (+https://wuapi.dev)`. Private and internal addresses are refused; hosts with hotlink protection may refuse the download, which fails the message with a message naming the host and its answer (`fetch media from upload.wikimedia.org: HTTP 403`).
     pub url: String,
     /// Guessed from the URL extension when omitted. Voice notes: send ogg/opus, nothing is transcoded.
@@ -923,8 +946,8 @@ pub struct SendMedia {
     pub filename: Option<String>,
 }
 
-impl SendMedia {
-    /// A `SendMedia` from its required fields; the rest start as `None`.
+impl SendMediaUrl {
+    /// A `SendMediaUrl` from its required fields; the rest start as `None`.
     #[must_use]
     pub fn new(url: impl Into<String>) -> Self {
         Self {
@@ -935,9 +958,58 @@ impl SendMedia {
     }
 }
 
-/// An image to send, fetched by our servers.
+/// A file to send, uploaded before with `POST /v1/uploads`.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct SendImageMedia {
+pub struct SendMediaUpload {
+    /// The id of a `ready` upload (`POST /v1/uploads`). Nothing is downloaded from outside: the file is already stored. The upload can be sent again until it expires.
+    #[serde(rename = "uploadId")]
+    pub upload_id: String,
+    /// Defaults to the upload's `mimeType`. Voice notes: upload ogg/opus, nothing is transcoded.
+    #[serde(rename = "mimeType", default, skip_serializing_if = "Option::is_none")]
+    pub mime_type: Option<String>,
+    /// Defaults to the upload's `filename`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filename: Option<String>,
+}
+
+impl SendMediaUpload {
+    /// A `SendMediaUpload` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(upload_id: impl Into<String>) -> Self {
+        Self {
+            upload_id: upload_id.into(),
+            mime_type: None,
+            filename: None,
+        }
+    }
+}
+
+/// An image to send: exactly one of `url` (a public URL our servers download) or `uploadId` (a file uploaded with `POST /v1/uploads`).
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
+#[non_exhaustive]
+pub enum SendImageMedia {
+    SendImageMediaUrl(SendImageMediaUrl),
+    SendImageMediaUpload(SendImageMediaUpload),
+    /// A shape this version of the SDK does not know.
+    Unknown(serde_json::Value),
+}
+
+impl From<SendImageMediaUrl> for SendImageMedia {
+    fn from(value: SendImageMediaUrl) -> Self {
+        Self::SendImageMediaUrl(value)
+    }
+}
+
+impl From<SendImageMediaUpload> for SendImageMedia {
+    fn from(value: SendImageMediaUpload) -> Self {
+        Self::SendImageMediaUpload(value)
+    }
+}
+
+/// An image to send, fetched by our servers from a URL.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct SendImageMediaUrl {
     /// Public `http(s)` URL our servers download (up to 5 redirects, 60 seconds, 100 MB), as `wuapi-media-fetcher/1.0 (+https://wuapi.dev)`. Private and internal addresses are refused; hosts with hotlink protection may refuse the download, which fails the message with a message naming the host and its answer (`fetch media from upload.wikimedia.org: HTTP 403`).
     pub url: String,
     /// Guessed from the URL extension when omitted. Voice notes: send ogg/opus, nothing is transcoded.
@@ -950,8 +1022,8 @@ pub struct SendImageMedia {
     pub quality: Option<ImageQualitySetting>,
 }
 
-impl SendImageMedia {
-    /// A `SendImageMedia` from its required fields; the rest start as `None`.
+impl SendImageMediaUrl {
+    /// A `SendImageMediaUrl` from its required fields; the rest start as `None`.
     #[must_use]
     pub fn new(url: impl Into<String>) -> Self {
         Self {
@@ -963,9 +1035,62 @@ impl SendImageMedia {
     }
 }
 
-/// A video to send, fetched by our servers.
+/// An image to send, uploaded before with `POST /v1/uploads`.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct SendVideoMedia {
+pub struct SendImageMediaUpload {
+    /// The id of a `ready` upload (`POST /v1/uploads`). Nothing is downloaded from outside: the file is already stored. The upload can be sent again until it expires.
+    #[serde(rename = "uploadId")]
+    pub upload_id: String,
+    /// Defaults to the upload's `mimeType`. Voice notes: upload ogg/opus, nothing is transcoded.
+    #[serde(rename = "mimeType", default, skip_serializing_if = "Option::is_none")]
+    pub mime_type: Option<String>,
+    /// Defaults to the upload's `filename`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filename: Option<String>,
+    /// The quality of this image, instead of the account's `imageQuality`. `hd` is WhatsApp's HD photo; `original` sends the file without re-encoding it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quality: Option<ImageQualitySetting>,
+}
+
+impl SendImageMediaUpload {
+    /// A `SendImageMediaUpload` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(upload_id: impl Into<String>) -> Self {
+        Self {
+            upload_id: upload_id.into(),
+            mime_type: None,
+            filename: None,
+            quality: None,
+        }
+    }
+}
+
+/// A video to send: exactly one of `url` (a public URL our servers download) or `uploadId` (a file uploaded with `POST /v1/uploads`).
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
+#[non_exhaustive]
+pub enum SendVideoMedia {
+    SendVideoMediaUrl(SendVideoMediaUrl),
+    SendVideoMediaUpload(SendVideoMediaUpload),
+    /// A shape this version of the SDK does not know.
+    Unknown(serde_json::Value),
+}
+
+impl From<SendVideoMediaUrl> for SendVideoMedia {
+    fn from(value: SendVideoMediaUrl) -> Self {
+        Self::SendVideoMediaUrl(value)
+    }
+}
+
+impl From<SendVideoMediaUpload> for SendVideoMedia {
+    fn from(value: SendVideoMediaUpload) -> Self {
+        Self::SendVideoMediaUpload(value)
+    }
+}
+
+/// A video to send, fetched by our servers from a URL.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct SendVideoMediaUrl {
     /// Public `http(s)` URL our servers download (up to 5 redirects, 60 seconds, 100 MB), as `wuapi-media-fetcher/1.0 (+https://wuapi.dev)`. Private and internal addresses are refused; hosts with hotlink protection may refuse the download, which fails the message with a message naming the host and its answer (`fetch media from upload.wikimedia.org: HTTP 403`).
     pub url: String,
     /// Guessed from the URL extension when omitted. Voice notes: send ogg/opus, nothing is transcoded.
@@ -978,12 +1103,42 @@ pub struct SendVideoMedia {
     pub gif_playback: Option<bool>,
 }
 
-impl SendVideoMedia {
-    /// A `SendVideoMedia` from its required fields; the rest start as `None`.
+impl SendVideoMediaUrl {
+    /// A `SendVideoMediaUrl` from its required fields; the rest start as `None`.
     #[must_use]
     pub fn new(url: impl Into<String>) -> Self {
         Self {
             url: url.into(),
+            mime_type: None,
+            filename: None,
+            gif_playback: None,
+        }
+    }
+}
+
+/// A video to send, uploaded before with `POST /v1/uploads`.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct SendVideoMediaUpload {
+    /// The id of a `ready` upload (`POST /v1/uploads`). Nothing is downloaded from outside: the file is already stored. The upload can be sent again until it expires.
+    #[serde(rename = "uploadId")]
+    pub upload_id: String,
+    /// Defaults to the upload's `mimeType`. Voice notes: upload ogg/opus, nothing is transcoded.
+    #[serde(rename = "mimeType", default, skip_serializing_if = "Option::is_none")]
+    pub mime_type: Option<String>,
+    /// Defaults to the upload's `filename`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filename: Option<String>,
+    /// Play it as a GIF.
+    #[serde(rename = "gifPlayback", default, skip_serializing_if = "Option::is_none")]
+    pub gif_playback: Option<bool>,
+}
+
+impl SendVideoMediaUpload {
+    /// A `SendVideoMediaUpload` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(upload_id: impl Into<String>) -> Self {
+        Self {
+            upload_id: upload_id.into(),
             mime_type: None,
             filename: None,
             gif_playback: None,
@@ -2034,9 +2189,32 @@ impl LabelAssignRequest {
     }
 }
 
-/// An image or video for a story, fetched by our servers.
+/// An image or video for a story: exactly one of `url` (a public URL our servers download) or `uploadId` (a file uploaded with `POST /v1/uploads`).
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct StoryMedia {
+#[serde(untagged)]
+#[non_exhaustive]
+pub enum StoryMedia {
+    StoryMediaUrl(StoryMediaUrl),
+    StoryMediaUpload(StoryMediaUpload),
+    /// A shape this version of the SDK does not know.
+    Unknown(serde_json::Value),
+}
+
+impl From<StoryMediaUrl> for StoryMedia {
+    fn from(value: StoryMediaUrl) -> Self {
+        Self::StoryMediaUrl(value)
+    }
+}
+
+impl From<StoryMediaUpload> for StoryMedia {
+    fn from(value: StoryMediaUpload) -> Self {
+        Self::StoryMediaUpload(value)
+    }
+}
+
+/// An image or video for a story, fetched by our servers from a URL.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryMediaUrl {
     /// Public `http(s)` URL our servers download (up to 5 redirects, 60 seconds, 100 MB), as `wuapi-media-fetcher/1.0 (+https://wuapi.dev)`. Private and internal addresses are refused; hosts with hotlink protection may refuse the download, which fails the message with a message naming the host and its answer (`fetch media from upload.wikimedia.org: HTTP 403`).
     pub url: String,
     #[serde(rename = "mimeType", default, skip_serializing_if = "Option::is_none")]
@@ -2046,12 +2224,38 @@ pub struct StoryMedia {
     pub quality: Option<ImageQualitySetting>,
 }
 
-impl StoryMedia {
-    /// A `StoryMedia` from its required fields; the rest start as `None`.
+impl StoryMediaUrl {
+    /// A `StoryMediaUrl` from its required fields; the rest start as `None`.
     #[must_use]
     pub fn new(url: impl Into<String>) -> Self {
         Self {
             url: url.into(),
+            mime_type: None,
+            quality: None,
+        }
+    }
+}
+
+/// An image or video for a story, uploaded before with `POST /v1/uploads`.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryMediaUpload {
+    /// The id of a `ready` upload (`POST /v1/uploads`). Nothing is downloaded from outside: the file is already stored. The upload can be sent again until it expires.
+    #[serde(rename = "uploadId")]
+    pub upload_id: String,
+    /// Defaults to the upload's `mimeType`. Voice notes: upload ogg/opus, nothing is transcoded.
+    #[serde(rename = "mimeType", default, skip_serializing_if = "Option::is_none")]
+    pub mime_type: Option<String>,
+    /// Images only: the quality of this image, instead of the account's `imageQuality`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quality: Option<ImageQualitySetting>,
+}
+
+impl StoryMediaUpload {
+    /// A `StoryMediaUpload` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(upload_id: impl Into<String>) -> Self {
+        Self {
+            upload_id: upload_id.into(),
             mime_type: None,
             quality: None,
         }
@@ -5036,6 +5240,136 @@ impl From<WebhookTestEvent> for Event {
 }
 
 string_enum! {
+    /// - `pending`: Waiting for the bytes at `uploadUrl` and for `POST /v1/uploads/{uploadId}/complete`. Not sendable yet.
+    /// - `ready`: The file is stored. Send it with `media: { uploadId }` until `expiresAt`.
+    pub enum UploadStatus {
+        /// `pending`
+        Pending = "pending",
+        /// `ready`
+        Ready = "ready",
+        @unknown Unknown,
+    }
+}
+
+/// A file uploaded to be sent with `media: { uploadId }`.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Upload {
+    /// Always `upload`.
+    pub object: String,
+    /// Pass it as `media.uploadId` when sending.
+    pub id: String,
+    /// Project the resource belongs to, `null` when it is in no project. Set at creation and never changes.
+    #[serde(rename = "projectId")]
+    pub project_id: Option<String>,
+    pub status: UploadStatus,
+    /// The file's MIME type, as declared. A send uses it unless it passes its own `media.mimeType`.
+    #[serde(rename = "mimeType")]
+    pub mime_type: String,
+    /// The file name a recipient sees for a document, when one was given.
+    pub filename: Option<String>,
+    /// Bytes: the declared size while `pending`, the stored file's size once `ready`.
+    pub size: i64,
+    /// Where to `POST` the file's raw bytes, with the file's `Content-Type` and no API key. Valid for 1 hour. It answers `{ "storageId": "..." }`: pass that to `POST /v1/uploads/{uploadId}/complete`. Only on the answer of the `POST /v1/uploads` that issued it; `null` everywhere else, and for an upload created with `base64`. Treat it as a secret until then.
+    #[serde(rename = "uploadUrl")]
+    pub upload_url: Option<String>,
+    /// `pending`: when the upload URL stops working (1 hour after creation). `ready`: until when the upload can be sent (24 hours after it became ready). After it the upload answers `404`.
+    #[serde(rename = "expiresAt")]
+    pub expires_at: String,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+}
+
+/// Exactly one of: `size` (the bytes go to the `uploadUrl` of the answer; any size up to 100 MB), or `base64` (the bytes are in this request; up to 5 MB).
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
+#[non_exhaustive]
+pub enum UploadCreateRequest {
+    File(FileUploadCreateRequest),
+    Inline(InlineUploadCreateRequest),
+    /// A shape this version of the SDK does not know.
+    Unknown(serde_json::Value),
+}
+
+impl From<FileUploadCreateRequest> for UploadCreateRequest {
+    fn from(value: FileUploadCreateRequest) -> Self {
+        Self::File(value)
+    }
+}
+
+impl From<InlineUploadCreateRequest> for UploadCreateRequest {
+    fn from(value: InlineUploadCreateRequest) -> Self {
+        Self::Inline(value)
+    }
+}
+
+/// An upload whose bytes you post to `uploadUrl`. Any size up to 100 MB.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct FileUploadCreateRequest {
+    /// The file's MIME type, such as `image/jpeg` or `audio/ogg; codecs=opus`. Sends use it as the message's `mimeType`.
+    #[serde(rename = "mimeType")]
+    pub mime_type: String,
+    /// The file's size in bytes, at most 104857600 (100 MB). The file posted to `uploadUrl` must be exactly this size.
+    pub size: i64,
+    /// The file name a recipient sees for a document.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filename: Option<String>,
+}
+
+impl FileUploadCreateRequest {
+    /// A `FileUploadCreateRequest` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(mime_type: impl Into<String>, size: i64) -> Self {
+        Self {
+            mime_type: mime_type.into(),
+            size,
+            filename: None,
+        }
+    }
+}
+
+/// An upload with its bytes in the request. Up to 5 MB; the answer is already `ready`.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct InlineUploadCreateRequest {
+    /// The file's MIME type, such as `image/jpeg` or `audio/ogg; codecs=opus`. Sends use it as the message's `mimeType`.
+    #[serde(rename = "mimeType")]
+    pub mime_type: String,
+    /// The file's bytes in base64 (standard or URL-safe alphabet), at most 5 MB (5242880 bytes) once decoded.
+    pub base64: String,
+    /// The file name a recipient sees for a document.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filename: Option<String>,
+}
+
+impl InlineUploadCreateRequest {
+    /// A `InlineUploadCreateRequest` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(mime_type: impl Into<String>, base64: impl Into<String>) -> Self {
+        Self {
+            mime_type: mime_type.into(),
+            base64: base64.into(),
+            filename: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct UploadCompleteRequest {
+    /// The `storageId` in the JSON answer of the `POST` of the bytes to `uploadUrl`.
+    #[serde(rename = "storageId")]
+    pub storage_id: String,
+}
+
+impl UploadCompleteRequest {
+    /// A `UploadCompleteRequest` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(storage_id: impl Into<String>) -> Self {
+        Self {
+            storage_id: storage_id.into(),
+        }
+    }
+}
+
+string_enum! {
     pub enum ListChatsType {
         /// `direct`
         Direct = "direct",
@@ -5159,6 +5493,12 @@ pub type MessagesAddLabelParams = LabelAssignRequest;
 
 /// Params for `stories.create`.
 pub type StoriesCreateParams = StoryCreateRequest;
+
+/// Params for `uploads.create`.
+pub type UploadsCreateParams = UploadCreateRequest;
+
+/// Params for `uploads.complete`.
+pub type UploadsCompleteParams = UploadCompleteRequest;
 
 /// Params for `chats.list`.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, Default)]

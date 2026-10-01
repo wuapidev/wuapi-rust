@@ -20,5 +20,6 @@ pub mod projects;
 pub mod proxy_locations;
 pub mod sticker_packs;
 pub mod stories;
+pub mod uploads;
 pub mod usage;
 pub mod webhook_endpoints;

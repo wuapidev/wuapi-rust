@@ -18,6 +18,8 @@ impl StoriesResource {
     ///
     /// Queued like any send and stored as an outbound message with `chatId: stories`. The outcome arrives as `message.sent` or `message.failed`.
     ///
+    /// An image or video story takes `media.url` or `media.uploadId` (a file uploaded with `POST /v1/uploads`).
+    ///
     /// `POST /v1/accounts/{accountId}/stories`
     ///
     /// Sends `Idempotency-Key` (a random key, or your own with `.idempotency_key(..)`), so it is retried on timeouts, network errors, `429` and `5xx` without repeating its effect.

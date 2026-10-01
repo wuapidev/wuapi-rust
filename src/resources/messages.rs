@@ -21,6 +21,8 @@ impl MessagesResource {
     ///
     /// Send `Idempotency-Key` so a retry never sends twice.
     ///
+    /// Media types take `media.url` (a public URL our servers download) or `media.uploadId` (a file uploaded with `POST /v1/uploads`: a local file, a pasted image, a recorded voice note). An upload that does not exist, expired or belongs to another organization or project answers `404`; one that is still `pending` answers `400`.
+    ///
     /// `POST /v1/messages`
     ///
     /// Sends `Idempotency-Key` (a random key, or your own with `.idempotency_key(..)`), so it is retried on timeouts, network errors, `429` and `5xx` without repeating its effect.
