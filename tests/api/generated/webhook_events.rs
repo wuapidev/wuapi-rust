@@ -59,6 +59,7 @@ fn event_verifies_and_parses() {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },

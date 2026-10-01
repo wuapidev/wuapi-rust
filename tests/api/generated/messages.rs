@@ -62,7 +62,9 @@ async fn send() {
       "media": {
         "url": "url 1",
         "mimeType": "mimeType 1",
-        "filename": "filename 1"
+        "filename": "filename 1",
+        "size": 1,
+        "downloaded": true
       },
       "location": {
         "latitude": 1.5,
@@ -203,7 +205,9 @@ async fn send_retries_with_one_key() {
       "media": {
         "url": "url 1",
         "mimeType": "mimeType 1",
-        "filename": "filename 1"
+        "filename": "filename 1",
+        "size": 1,
+        "downloaded": true
       },
       "location": {
         "latitude": 1.5,
@@ -325,7 +329,9 @@ async fn list_streams_every_page() {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -415,7 +421,9 @@ async fn list_streams_every_page() {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -517,7 +525,9 @@ async fn list_streams_every_page() {
         "media": {
           "url": "url 1",
           "mimeType": "mimeType 1",
-          "filename": "filename 1"
+          "filename": "filename 1",
+          "size": 1,
+          "downloaded": true
         },
         "location": {
           "latitude": 1.5,
@@ -601,7 +611,9 @@ async fn list_streams_every_page() {
         "media": {
           "url": "url 1",
           "mimeType": "mimeType 1",
-          "filename": "filename 1"
+          "filename": "filename 1",
+          "size": 1,
+          "downloaded": true
         },
         "location": {
           "latitude": 1.5,
@@ -699,7 +711,9 @@ async fn list_fetches_one_page() {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -798,7 +812,9 @@ async fn get() {
       "media": {
         "url": "url 1",
         "mimeType": "mimeType 1",
-        "filename": "filename 1"
+        "filename": "filename 1",
+        "size": 1,
+        "downloaded": true
       },
       "location": {
         "latitude": 1.5,
@@ -877,6 +893,51 @@ async fn get() {
 }
 
 #[tokio::test]
+async fn get_media() {
+    let response = support::json(r#"{
+      "object": "media",
+      "messageId": "messageId 1",
+      "url": "url 1",
+      "mimeType": "mimeType 1",
+      "filename": "filename 1",
+      "size": 1
+    }"#);
+    let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+    let params: types::MessagesGetMediaParams = support::from_json(r#"{"redirect":true}"#);
+    let result = api.client().messages().get_media("m17d0a9w2sqc7k3v8x1n5ybr6t4hjp2e", params).await.unwrap();
+    support::assert_json(&result, &response);
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 1);
+    assert_eq!(calls[0].method, "GET");
+    assert_eq!(calls[0].path, "/v1/messages/m17d0a9w2sqc7k3v8x1n5ybr6t4hjp2e/media");
+    assert_eq!(calls[0].query, support::pairs(&[("redirect", "true")]));
+    assert!(calls[0].body.is_none());
+    assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+}
+
+#[tokio::test]
+async fn get_media_without_params() {
+    let response = support::json(r#"{
+      "object": "media",
+      "messageId": "messageId 1",
+      "url": "url 1",
+      "mimeType": "mimeType 1",
+      "filename": "filename 1",
+      "size": 1
+    }"#);
+    let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+    let result = api.client().messages().get_media("m17d0a9w2sqc7k3v8x1n5ybr6t4hjp2e", Default::default()).await.unwrap();
+    support::assert_json(&result, &response);
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 1);
+    assert_eq!(calls[0].method, "GET");
+    assert_eq!(calls[0].path, "/v1/messages/m17d0a9w2sqc7k3v8x1n5ybr6t4hjp2e/media");
+    assert_eq!(calls[0].query, support::pairs(&[]));
+    assert!(calls[0].body.is_none());
+    assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+}
+
+#[tokio::test]
 async fn edit() {
     let response = support::json(r#"{
       "object": "message",
@@ -896,7 +957,9 @@ async fn edit() {
       "media": {
         "url": "url 1",
         "mimeType": "mimeType 1",
-        "filename": "filename 1"
+        "filename": "filename 1",
+        "size": 1,
+        "downloaded": true
       },
       "location": {
         "latitude": 1.5,
@@ -1062,7 +1125,9 @@ async fn vote() {
       "media": {
         "url": "url 1",
         "mimeType": "mimeType 1",
-        "filename": "filename 1"
+        "filename": "filename 1",
+        "size": 1,
+        "downloaded": true
       },
       "location": {
         "latitude": 1.5,
@@ -1161,7 +1226,9 @@ async fn vote_retries_with_one_key() {
       "media": {
         "url": "url 1",
         "mimeType": "mimeType 1",
-        "filename": "filename 1"
+        "filename": "filename 1",
+        "size": 1,
+        "downloaded": true
       },
       "location": {
         "latitude": 1.5,
@@ -1259,7 +1326,9 @@ async fn star() {
       "media": {
         "url": "url 1",
         "mimeType": "mimeType 1",
-        "filename": "filename 1"
+        "filename": "filename 1",
+        "size": 1,
+        "downloaded": true
       },
       "location": {
         "latitude": 1.5,
@@ -1357,7 +1426,9 @@ async fn star_retries_with_one_key() {
       "media": {
         "url": "url 1",
         "mimeType": "mimeType 1",
-        "filename": "filename 1"
+        "filename": "filename 1",
+        "size": 1,
+        "downloaded": true
       },
       "location": {
         "latitude": 1.5,
@@ -1454,7 +1525,9 @@ async fn unstar() {
       "media": {
         "url": "url 1",
         "mimeType": "mimeType 1",
-        "filename": "filename 1"
+        "filename": "filename 1",
+        "size": 1,
+        "downloaded": true
       },
       "location": {
         "latitude": 1.5,
@@ -1552,7 +1625,9 @@ async fn unstar_retries_with_one_key() {
       "media": {
         "url": "url 1",
         "mimeType": "mimeType 1",
-        "filename": "filename 1"
+        "filename": "filename 1",
+        "size": 1,
+        "downloaded": true
       },
       "location": {
         "latitude": 1.5,
