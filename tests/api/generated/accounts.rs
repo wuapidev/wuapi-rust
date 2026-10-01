@@ -61,6 +61,7 @@ async fn list_streams_every_page() {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },
@@ -110,6 +111,7 @@ async fn list_streams_every_page() {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },
@@ -164,6 +166,7 @@ async fn list_streams_every_page() {
           "custom": true
         },
         "historySync": "none",
+        "mediaAutoDownload": "none",
         "metadata": {
           "key": "value 1"
         },
@@ -207,6 +210,7 @@ async fn list_streams_every_page() {
           "custom": true
         },
         "historySync": "none",
+        "mediaAutoDownload": "none",
         "metadata": {
           "key": "value 1"
         },
@@ -264,6 +268,7 @@ async fn list_fetches_one_page() {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },
@@ -322,6 +327,7 @@ async fn create() {
         "custom": true
       },
       "historySync": "none",
+      "mediaAutoDownload": "none",
       "metadata": {
         "key": "value 1"
       },
@@ -400,6 +406,7 @@ async fn create_retries_with_one_key() {
         "custom": true
       },
       "historySync": "none",
+      "mediaAutoDownload": "none",
       "metadata": {
         "key": "value 1"
       },
@@ -467,6 +474,7 @@ async fn get() {
         "custom": true
       },
       "historySync": "none",
+      "mediaAutoDownload": "none",
       "metadata": {
         "key": "value 1"
       },
@@ -524,6 +532,7 @@ async fn update() {
         "custom": true
       },
       "historySync": "none",
+      "mediaAutoDownload": "none",
       "metadata": {
         "key": "value 1"
       },
@@ -549,6 +558,7 @@ async fn update() {
         "queueTimeoutMinutes": 1
       },
       "historySync": "none",
+      "mediaAutoDownload": "none",
       "proxyLocation": {
         "country": "country 1",
         "city": "city 1",
@@ -578,6 +588,7 @@ async fn update() {
         "queueTimeoutMinutes": 1
       },
       "historySync": "none",
+      "mediaAutoDownload": "none",
       "proxyLocation": {
         "country": "country 1",
         "city": "city 1",
@@ -624,6 +635,7 @@ async fn update_without_params() {
         "custom": true
       },
       "historySync": "none",
+      "mediaAutoDownload": "none",
       "metadata": {
         "key": "value 1"
       },
@@ -667,6 +679,7 @@ async fn update_is_not_repeated() {
         "queueTimeoutMinutes": 1
       },
       "historySync": "none",
+      "mediaAutoDownload": "none",
       "proxyLocation": {
         "country": "country 1",
         "city": "city 1",
@@ -728,6 +741,7 @@ async fn reconnect() {
         "custom": true
       },
       "historySync": "none",
+      "mediaAutoDownload": "none",
       "metadata": {
         "key": "value 1"
       },
@@ -785,6 +799,7 @@ async fn reconnect_retries_with_one_key() {
         "custom": true
       },
       "historySync": "none",
+      "mediaAutoDownload": "none",
       "metadata": {
         "key": "value 1"
       },
@@ -841,6 +856,7 @@ async fn logout() {
         "custom": true
       },
       "historySync": "none",
+      "mediaAutoDownload": "none",
       "metadata": {
         "key": "value 1"
       },
@@ -898,6 +914,7 @@ async fn logout_retries_with_one_key() {
         "custom": true
       },
       "historySync": "none",
+      "mediaAutoDownload": "none",
       "metadata": {
         "key": "value 1"
       },

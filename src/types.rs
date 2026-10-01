@@ -239,6 +239,9 @@ pub struct Account {
     /// Whether the recent chats the phone sends right after linking are imported. `none` by default. WhatsApp sends this history once, right after the number links, so a change applies to the next link. A number that is already linked gets no new history, not even after a reconnect.
     #[serde(rename = "historySync")]
     pub history_sync: HistorySyncSetting,
+    /// Which received media is downloaded right away; the rest on demand. `none` for new accounts.
+    #[serde(rename = "mediaAutoDownload")]
+    pub media_auto_download: MediaAutoDownloadSetting,
     /// Your labels. Set from an invitation's `metadata` when the invitee links the number.
     pub metadata: std::collections::BTreeMap<String, String>,
     /// When linking first finished.
@@ -308,6 +311,78 @@ string_enum! {
     }
 }
 
+/// Which received media is downloaded as soon as it arrives, through the number's proxy (proxy traffic). The rest stays on WhatsApp until requested (`media.url`, `GET /v1/messages/{messageId}/media`).
+/// - `none`: nothing up front; every file on demand. The default for accounts created since on-demand media.
+/// - `all`: every file up front. Accounts created before on-demand media keep this.
+/// - `{maxBytes, types}`: only files of those types up to `maxBytes` bytes up front; the rest on demand.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
+#[non_exhaustive]
+pub enum MediaAutoDownloadSetting {
+    MediaAutoDownloadSettingVariant1(MediaAutoDownloadSettingVariant1),
+    MediaAutoDownloadSettingVariant2(MediaAutoDownloadSettingVariant2),
+    /// A shape this version of the SDK does not know.
+    Unknown(serde_json::Value),
+}
+
+impl From<MediaAutoDownloadSettingVariant1> for MediaAutoDownloadSetting {
+    fn from(value: MediaAutoDownloadSettingVariant1) -> Self {
+        Self::MediaAutoDownloadSettingVariant1(value)
+    }
+}
+
+impl From<MediaAutoDownloadSettingVariant2> for MediaAutoDownloadSetting {
+    fn from(value: MediaAutoDownloadSettingVariant2) -> Self {
+        Self::MediaAutoDownloadSettingVariant2(value)
+    }
+}
+
+string_enum! {
+    pub enum MediaAutoDownloadSettingVariant1 {
+        /// `none`
+        None = "none",
+        /// `all`
+        All = "all",
+        @unknown Unknown,
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct MediaAutoDownloadSettingVariant2 {
+    /// Largest file downloaded up front, in bytes.
+    #[serde(rename = "maxBytes")]
+    pub max_bytes: i64,
+    /// Media types downloaded up front.
+    pub types: Vec<MediaAutoDownloadSettingVariant2TypesItem>,
+}
+
+impl MediaAutoDownloadSettingVariant2 {
+    /// A `MediaAutoDownloadSettingVariant2` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(max_bytes: i64, types: Vec<MediaAutoDownloadSettingVariant2TypesItem>) -> Self {
+        Self {
+            max_bytes,
+            types,
+        }
+    }
+}
+
+string_enum! {
+    pub enum MediaAutoDownloadSettingVariant2TypesItem {
+        /// `image`
+        Image = "image",
+        /// `video`
+        Video = "video",
+        /// `audio`
+        Audio = "audio",
+        /// `document`
+        Document = "document",
+        /// `sticker`
+        Sticker = "sticker",
+        @unknown Unknown,
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct AccountCreateRequest {
     /// Label, at most 100 characters.
@@ -341,7 +416,7 @@ impl AccountCreateRequest {
     }
 }
 
-/// Provide at least one field. Call settings go to the live session, so the engine must know the account (any status). Pacing and `historySync` are stored even before the account has a session. A `proxyLocation` change moves a live session to the new exit.
+/// Provide at least one field. Call settings go to the live session, so the engine must know the account (any status). Pacing, `historySync` and `mediaAutoDownload` are stored even before the account has a session. A `proxyLocation` change moves a live session to the new exit.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct AccountUpdateRequest {
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -357,6 +432,9 @@ pub struct AccountUpdateRequest {
     /// Import history at the next link, or not. WhatsApp sends this history once, right after the number links, so a change applies to the next link. A number that is already linked gets no new history, not even after a reconnect.
     #[serde(rename = "historySync", default, skip_serializing_if = "Option::is_none")]
     pub history_sync: Option<HistorySyncSetting>,
+    /// Which received media is downloaded right away. Applies to messages received from then on; files already received keep what they had.
+    #[serde(rename = "mediaAutoDownload", default, skip_serializing_if = "Option::is_none")]
+    pub media_auto_download: Option<MediaAutoDownloadSetting>,
     /// Move the number, or switch whether its city is exact. A location change: the number gets a new exit IP and its session reconnects.
     #[serde(rename = "proxyLocation", default, skip_serializing_if = "Option::is_none")]
     pub proxy_location: Option<ProxyLocationUpdate>,
@@ -571,13 +649,34 @@ string_enum! {
     }
 }
 
+/// A message's file. Received media is downloaded on demand by default (an account's `mediaAutoDownload`): until someone asks for it, the file stays on WhatsApp, `downloaded` is `false` and `url` is `https://api.wuapi.dev/v1/messages/{messageId}/media`, which needs your API key, downloads the file once through the number's proxy and redirects to it. Once stored, `downloaded` is `true` and `url` is the file itself. Tools that fetch `url` without headers (no-code automations) must send the API key (`Authorization: Bearer`) when `downloaded` is `false`, or call the endpoint with `redirect=false` and use the `url` it returns, which needs no key.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct MessageMedia {
-    /// Inbound: a URL to download the file. The URL does not expire and needs no API key, so anyone who has it can download the file: treat it as a secret. It stops working when the message is deleted. `null` for messages imported by history sync. Outbound: the URL you sent.
+    /// `downloaded: true`: the file itself. Received: stored by wuapi; the URL does not expire and needs no API key, so anyone who has it can download the file: treat it as a secret. It stops working when the message is deleted. Sent: the URL you gave. `downloaded: false`: `GET /v1/messages/{messageId}/media` on api.wuapi.dev, which needs the API key (`Authorization: Bearer`) and answers a redirect to the file. `null` when wuapi has nothing to fetch the file with (some messages imported by history sync).
     pub url: Option<String>,
     #[serde(rename = "mimeType")]
     pub mime_type: Option<String>,
     pub filename: Option<String>,
+    /// Bytes, when known.
+    pub size: Option<i64>,
+    /// `true`: `url` is the file. `false`: the file is still on WhatsApp; `url` fetches it on first use.
+    pub downloaded: bool,
+}
+
+/// A message's stored file, from `GET /v1/messages/{messageId}/media` asked for JSON.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct MessageMediaFile {
+    /// Always `media`.
+    pub object: String,
+    #[serde(rename = "messageId")]
+    pub message_id: String,
+    /// The file. No API key needed.
+    pub url: String,
+    #[serde(rename = "mimeType")]
+    pub mime_type: Option<String>,
+    pub filename: Option<String>,
+    /// Bytes, when known.
+    pub size: Option<i64>,
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -3096,6 +3195,8 @@ string_enum! {
         MessageEdited = "message.edited",
         /// `message.deleted`
         MessageDeleted = "message.deleted",
+        /// `message.media_downloaded`
+        MessageMediaDownloaded = "message.media_downloaded",
         /// `poll.voted`
         PollVoted = "poll.voted",
         /// `group.joined`
@@ -4061,7 +4162,7 @@ pub struct AccountEventData {
     pub object: Account,
 }
 
-/// `message.sent` also fires for messages sent from the phone (`source: phone`) and for stories and channel posts. `message.deleted` carries the row with `deletedAt` set and the content cleared.
+/// `message.sent` also fires for messages sent from the phone (`source: phone`) and for stories and channel posts. `message.deleted` carries the row with `deletedAt` set and the content cleared. `message.media_downloaded` fires when wuapi stored, in the background, a received file the account's `mediaAutoDownload` wanted up front but WhatsApp did not hand over at first: `media.downloaded` is now `true` and `media.url` is the file. Files fetched by your own `GET /v1/messages/{messageId}/media` do not fire it.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct MessageEvent {
     /// Event id (`evt_...`). Deduplicate on it.
@@ -4092,6 +4193,8 @@ string_enum! {
         MessageFailed = "message.failed",
         /// `message.deleted`
         MessageDeleted = "message.deleted",
+        /// `message.media_downloaded`
+        MessageMediaDownloaded = "message.media_downloaded",
         @unknown Unknown,
     }
 }
@@ -4581,7 +4684,7 @@ pub struct WebhookTestEventData {
 pub enum Event {
     /// type: `account.qr_code_issued`, `account.pairing_code_issued`, `account.connected`, `account.disconnected`, `account.failed`
     Account(AccountEvent),
-    /// type: `message.received`, `message.sent`, `message.delivered`, `message.read`, `message.failed`, `message.deleted`
+    /// type: `message.received`, `message.sent`, `message.delivered`, `message.read`, `message.failed`, `message.deleted`, `message.media_downloaded`
     Message(MessageEvent),
     /// type: `message.edited`
     MessageEdited(MessageEditedEvent),
@@ -4672,7 +4775,8 @@ impl<'de> serde::Deserialize<'de> for Event {
                 | "message.delivered"
                 | "message.read"
                 | "message.failed"
-                | "message.deleted",
+                | "message.deleted"
+                | "message.media_downloaded",
             ) => crate::serde_helpers::from_value(value).map(Self::Message),
             Some("message.edited") => {
                 crate::serde_helpers::from_value(value).map(Self::MessageEdited)
@@ -4942,6 +5046,16 @@ pub struct MessagesListParams {
     /// Filter by project: a project id, `ext:<externalId>`, or `none` for resources in no project. With an organization scope and no filter, the list covers every project and the unassigned resources. With a project scope the list is always that project's; naming another project answers `403 forbidden`. An unknown project answers `404 project_not_found`.
     #[serde(rename = "projectId", default)]
     pub project_id: Option<String>,
+}
+
+/// Params for `messages.get_media`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, Default)]
+pub struct MessagesGetMediaParams {
+    /// `false` answers JSON with the file's URL instead of the `302` redirect.
+    ///
+    /// Default: `true`.
+    #[serde(default)]
+    pub redirect: Option<bool>,
 }
 
 /// Params for `messages.edit`.

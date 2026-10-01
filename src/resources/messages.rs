@@ -61,6 +61,26 @@ impl MessagesResource {
         self.http.request(parts)
     }
 
+    /// Get a message's media
+    ///
+    /// The message's file. By default the answer is `302 Found` to the file (no API key needed there), so `curl -L`, browsers and HTTP clients download it directly. With `redirect=false`, or an `Accept` header that names only `application/json` (the SDKs), the answer is this JSON with the file's URL instead.
+    ///
+    /// A received file still on WhatsApp (`media.downloaded: false`, on-demand media) is downloaded first, once, through the number's proxy, and kept: later requests are served from storage. Concurrent requests for the same file wait for that one download. WhatsApp keeps files for a limited time (about two weeks), after which the answer is `410 media_expired`. The account must be `ready` for a first download.
+    ///
+    /// `GET /v1/messages/{messageId}/media`
+    ///
+    /// Safe to repeat: retried on timeouts, network errors, `429` and `5xx`.
+    pub fn get_media(
+        &self,
+        message_id: &str,
+        params: types::MessagesGetMediaParams,
+    ) -> Request<types::MessageMediaFile> {
+        let parts = RequestParts::new(Method::Get, format!("/v1/messages/{}/media", encode_path(message_id)))
+            .query_opt("redirect", params.redirect.as_ref())
+            .retryable();
+        self.http.request(parts)
+    }
+
     /// Edit a message
     ///
     /// Outbound text messages only, within WhatsApp's edit window (about 15 minutes; WhatsApp's refusal is returned as is). Fires `message.edited`.

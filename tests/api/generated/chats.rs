@@ -61,7 +61,9 @@ async fn list_streams_every_page() {
             "media": {
               "url": "url 1",
               "mimeType": "mimeType 1",
-              "filename": "filename 1"
+              "filename": "filename 1",
+              "size": 1,
+              "downloaded": true
             },
             "location": {
               "latitude": 1.5,
@@ -169,7 +171,9 @@ async fn list_streams_every_page() {
             "media": {
               "url": "url 1",
               "mimeType": "mimeType 1",
-              "filename": "filename 1"
+              "filename": "filename 1",
+              "size": 1,
+              "downloaded": true
             },
             "location": {
               "latitude": 1.5,
@@ -289,7 +293,9 @@ async fn list_streams_every_page() {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -391,7 +397,9 @@ async fn list_streams_every_page() {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -507,7 +515,9 @@ async fn list_fetches_one_page() {
             "media": {
               "url": "url 1",
               "mimeType": "mimeType 1",
-              "filename": "filename 1"
+              "filename": "filename 1",
+              "size": 1,
+              "downloaded": true
             },
             "location": {
               "latitude": 1.5,
@@ -624,7 +634,9 @@ async fn get() {
         "media": {
           "url": "url 1",
           "mimeType": "mimeType 1",
-          "filename": "filename 1"
+          "filename": "filename 1",
+          "size": 1,
+          "downloaded": true
         },
         "location": {
           "latitude": 1.5,

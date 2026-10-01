@@ -41,7 +41,9 @@ async fn create() {
       "media": {
         "url": "url 1",
         "mimeType": "mimeType 1",
-        "filename": "filename 1"
+        "filename": "filename 1",
+        "size": 1,
+        "downloaded": true
       },
       "location": {
         "latitude": 1.5,
@@ -140,7 +142,9 @@ async fn create_retries_with_one_key() {
       "media": {
         "url": "url 1",
         "mimeType": "mimeType 1",
-        "filename": "filename 1"
+        "filename": "filename 1",
+        "size": 1,
+        "downloaded": true
       },
       "location": {
         "latitude": 1.5,

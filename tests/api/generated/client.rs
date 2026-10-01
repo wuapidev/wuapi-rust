@@ -110,6 +110,7 @@ mod accounts {
                 "custom": true
               },
               "historySync": "none",
+              "mediaAutoDownload": "none",
               "metadata": {
                 "key": "value 1"
               },
@@ -159,6 +160,7 @@ mod accounts {
                 "custom": true
               },
               "historySync": "none",
+              "mediaAutoDownload": "none",
               "metadata": {
                 "key": "value 1"
               },
@@ -213,6 +215,7 @@ mod accounts {
               "custom": true
             },
             "historySync": "none",
+            "mediaAutoDownload": "none",
             "metadata": {
               "key": "value 1"
             },
@@ -256,6 +259,7 @@ mod accounts {
               "custom": true
             },
             "historySync": "none",
+            "mediaAutoDownload": "none",
             "metadata": {
               "key": "value 1"
             },
@@ -313,6 +317,7 @@ mod accounts {
                 "custom": true
               },
               "historySync": "none",
+              "mediaAutoDownload": "none",
               "metadata": {
                 "key": "value 1"
               },
@@ -371,6 +376,7 @@ mod accounts {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },
@@ -449,6 +455,7 @@ mod accounts {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },
@@ -516,6 +523,7 @@ mod accounts {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },
@@ -573,6 +581,7 @@ mod accounts {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },
@@ -598,6 +607,7 @@ mod accounts {
             "queueTimeoutMinutes": 1
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "proxyLocation": {
             "country": "country 1",
             "city": "city 1",
@@ -627,6 +637,7 @@ mod accounts {
             "queueTimeoutMinutes": 1
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "proxyLocation": {
             "country": "country 1",
             "city": "city 1",
@@ -673,6 +684,7 @@ mod accounts {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },
@@ -716,6 +728,7 @@ mod accounts {
             "queueTimeoutMinutes": 1
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "proxyLocation": {
             "country": "country 1",
             "city": "city 1",
@@ -777,6 +790,7 @@ mod accounts {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },
@@ -834,6 +848,7 @@ mod accounts {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },
@@ -890,6 +905,7 @@ mod accounts {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },
@@ -947,6 +963,7 @@ mod accounts {
             "custom": true
           },
           "historySync": "none",
+          "mediaAutoDownload": "none",
           "metadata": {
             "key": "value 1"
           },
@@ -1160,7 +1177,9 @@ mod messages {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -1301,7 +1320,9 @@ mod messages {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -1423,7 +1444,9 @@ mod messages {
               "media": {
                 "url": "url 1",
                 "mimeType": "mimeType 1",
-                "filename": "filename 1"
+                "filename": "filename 1",
+                "size": 1,
+                "downloaded": true
               },
               "location": {
                 "latitude": 1.5,
@@ -1513,7 +1536,9 @@ mod messages {
               "media": {
                 "url": "url 1",
                 "mimeType": "mimeType 1",
-                "filename": "filename 1"
+                "filename": "filename 1",
+                "size": 1,
+                "downloaded": true
               },
               "location": {
                 "latitude": 1.5,
@@ -1615,7 +1640,9 @@ mod messages {
             "media": {
               "url": "url 1",
               "mimeType": "mimeType 1",
-              "filename": "filename 1"
+              "filename": "filename 1",
+              "size": 1,
+              "downloaded": true
             },
             "location": {
               "latitude": 1.5,
@@ -1699,7 +1726,9 @@ mod messages {
             "media": {
               "url": "url 1",
               "mimeType": "mimeType 1",
-              "filename": "filename 1"
+              "filename": "filename 1",
+              "size": 1,
+              "downloaded": true
             },
             "location": {
               "latitude": 1.5,
@@ -1797,7 +1826,9 @@ mod messages {
               "media": {
                 "url": "url 1",
                 "mimeType": "mimeType 1",
-                "filename": "filename 1"
+                "filename": "filename 1",
+                "size": 1,
+                "downloaded": true
               },
               "location": {
                 "latitude": 1.5,
@@ -1896,7 +1927,9 @@ mod messages {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -1975,6 +2008,51 @@ mod messages {
     }
 
     #[tokio::test]
+    async fn get_media() {
+        let response = support::json(r#"{
+          "object": "media",
+          "messageId": "messageId 1",
+          "url": "url 1",
+          "mimeType": "mimeType 1",
+          "filename": "filename 1",
+          "size": 1
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+        let params: types::MessagesGetMediaParams = support::from_json(r#"{"redirect":true}"#);
+        let result = api.client().messages().get_media("m17d0a9w2sqc7k3v8x1n5ybr6t4hjp2e", params).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "GET");
+        assert_eq!(calls[0].path, "/v1/messages/m17d0a9w2sqc7k3v8x1n5ybr6t4hjp2e/media");
+        assert_eq!(calls[0].query, support::pairs(&[("redirect", "true")]));
+        assert!(calls[0].body.is_none());
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+    }
+
+    #[tokio::test]
+    async fn get_media_without_params() {
+        let response = support::json(r#"{
+          "object": "media",
+          "messageId": "messageId 1",
+          "url": "url 1",
+          "mimeType": "mimeType 1",
+          "filename": "filename 1",
+          "size": 1
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+        let result = api.client().messages().get_media("m17d0a9w2sqc7k3v8x1n5ybr6t4hjp2e", Default::default()).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "GET");
+        assert_eq!(calls[0].path, "/v1/messages/m17d0a9w2sqc7k3v8x1n5ybr6t4hjp2e/media");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        assert!(calls[0].body.is_none());
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+    }
+
+    #[tokio::test]
     async fn edit() {
         let response = support::json(r#"{
           "object": "message",
@@ -1994,7 +2072,9 @@ mod messages {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -2160,7 +2240,9 @@ mod messages {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -2259,7 +2341,9 @@ mod messages {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -2357,7 +2441,9 @@ mod messages {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -2455,7 +2541,9 @@ mod messages {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -2552,7 +2640,9 @@ mod messages {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -2650,7 +2740,9 @@ mod messages {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -2791,7 +2883,9 @@ mod stories {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -2890,7 +2984,9 @@ mod stories {
           "media": {
             "url": "url 1",
             "mimeType": "mimeType 1",
-            "filename": "filename 1"
+            "filename": "filename 1",
+            "size": 1,
+            "downloaded": true
           },
           "location": {
             "latitude": 1.5,
@@ -3005,7 +3101,9 @@ mod chats {
                 "media": {
                   "url": "url 1",
                   "mimeType": "mimeType 1",
-                  "filename": "filename 1"
+                  "filename": "filename 1",
+                  "size": 1,
+                  "downloaded": true
                 },
                 "location": {
                   "latitude": 1.5,
@@ -3113,7 +3211,9 @@ mod chats {
                 "media": {
                   "url": "url 1",
                   "mimeType": "mimeType 1",
-                  "filename": "filename 1"
+                  "filename": "filename 1",
+                  "size": 1,
+                  "downloaded": true
                 },
                 "location": {
                   "latitude": 1.5,
@@ -3233,7 +3333,9 @@ mod chats {
               "media": {
                 "url": "url 1",
                 "mimeType": "mimeType 1",
-                "filename": "filename 1"
+                "filename": "filename 1",
+                "size": 1,
+                "downloaded": true
               },
               "location": {
                 "latitude": 1.5,
@@ -3335,7 +3437,9 @@ mod chats {
               "media": {
                 "url": "url 1",
                 "mimeType": "mimeType 1",
-                "filename": "filename 1"
+                "filename": "filename 1",
+                "size": 1,
+                "downloaded": true
               },
               "location": {
                 "latitude": 1.5,
@@ -3451,7 +3555,9 @@ mod chats {
                 "media": {
                   "url": "url 1",
                   "mimeType": "mimeType 1",
-                  "filename": "filename 1"
+                  "filename": "filename 1",
+                  "size": 1,
+                  "downloaded": true
                 },
                 "location": {
                   "latitude": 1.5,
@@ -3568,7 +3674,9 @@ mod chats {
             "media": {
               "url": "url 1",
               "mimeType": "mimeType 1",
-              "filename": "filename 1"
+              "filename": "filename 1",
+              "size": 1,
+              "downloaded": true
             },
             "location": {
               "latitude": 1.5,
