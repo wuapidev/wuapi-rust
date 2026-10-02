@@ -9,6 +9,7 @@ pub mod calls;
 pub mod channels;
 pub mod chats;
 pub mod contacts;
+pub mod favorite_stickers;
 pub mod groups;
 pub mod invitations;
 pub mod labels;

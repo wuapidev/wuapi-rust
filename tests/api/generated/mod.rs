@@ -9,6 +9,7 @@ mod calls;
 mod channels;
 mod chats;
 mod contacts;
+mod favorite_stickers;
 mod groups;
 mod invitations;
 mod labels;

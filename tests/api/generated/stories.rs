@@ -46,6 +46,7 @@ async fn create() {
         "width": 1,
         "height": 1,
         "durationSeconds": 1,
+        "gifPlayback": true,
         "downloaded": true
       },
       "location": {
@@ -95,9 +96,11 @@ async fn create() {
         "mentions 1"
       ],
       "forwarded": true,
+      "forwardedManyTimes": true,
       "viewOnce": true,
       "starred": true,
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "status": "queued",
       "error": {
         "code": "not_on_whatsapp",
@@ -150,6 +153,7 @@ async fn create_retries_with_one_key() {
         "width": 1,
         "height": 1,
         "durationSeconds": 1,
+        "gifPlayback": true,
         "downloaded": true
       },
       "location": {
@@ -199,9 +203,11 @@ async fn create_retries_with_one_key() {
         "mentions 1"
       ],
       "forwarded": true,
+      "forwardedManyTimes": true,
       "viewOnce": true,
       "starred": true,
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "status": "queued",
       "error": {
         "code": "not_on_whatsapp",
@@ -226,4 +232,829 @@ async fn create_retries_with_one_key() {
     assert!(!key.is_empty());
     assert_eq!(calls[1].header(sdk::IDEMPOTENCY_HEADER), Some(key));
     assert_eq!(calls[0].body, calls[1].body);
+}
+
+#[tokio::test]
+async fn list_streams_every_page() {
+    let first = support::json(r#"{
+      "object": "list",
+      "items": [
+        {
+          "object": "story_group",
+          "accountId": "accountId 1",
+          "contactId": "contactId 1",
+          "profileName": "profileName 1",
+          "username": "username 1",
+          "muted": true,
+          "storyCount": 1,
+          "unviewedCount": 1,
+          "lastPostedAt": "2026-09-24T09:00:00.000Z",
+          "stories": [
+            {
+              "object": "story",
+              "id": "id 1",
+              "projectId": "projectId 1",
+              "accountId": "accountId 1",
+              "contactId": "contactId 1",
+              "own": true,
+              "profileName": "profileName 1",
+              "username": "username 1",
+              "type": "text",
+              "text": "text 1",
+              "backgroundColor": "backgroundColor 1",
+              "font": 1,
+              "media": {
+                "url": "url 1",
+                "mimeType": "mimeType 1",
+                "filename": "filename 1",
+                "size": 1,
+                "width": 1,
+                "height": 1,
+                "durationSeconds": 1,
+                "gifPlayback": true,
+                "downloaded": true
+              },
+              "status": "queued",
+              "viewedAt": "2026-09-24T09:00:00.000Z",
+              "authorNotified": true,
+              "reaction": "reaction 1",
+              "viewCount": 1,
+              "postedAt": "2026-09-24T09:00:00.000Z",
+              "expiresAt": "2026-09-24T09:00:00.000Z",
+              "deletedAt": "2026-09-24T09:00:00.000Z",
+              "createdAt": "2026-09-24T09:00:00.000Z"
+            }
+          ]
+        }
+      ],
+      "nextCursor": "cursor_2"
+    }"#);
+    let last = support::json(r#"{
+      "object": "list",
+      "items": [
+        {
+          "object": "story_group",
+          "accountId": "accountId 1",
+          "contactId": "contactId 1",
+          "profileName": "profileName 1",
+          "username": "username 1",
+          "muted": true,
+          "storyCount": 1,
+          "unviewedCount": 1,
+          "lastPostedAt": "2026-09-24T09:00:00.000Z",
+          "stories": [
+            {
+              "object": "story",
+              "id": "id 1",
+              "projectId": "projectId 1",
+              "accountId": "accountId 1",
+              "contactId": "contactId 1",
+              "own": true,
+              "profileName": "profileName 1",
+              "username": "username 1",
+              "type": "text",
+              "text": "text 1",
+              "backgroundColor": "backgroundColor 1",
+              "font": 1,
+              "media": {
+                "url": "url 1",
+                "mimeType": "mimeType 1",
+                "filename": "filename 1",
+                "size": 1,
+                "width": 1,
+                "height": 1,
+                "durationSeconds": 1,
+                "gifPlayback": true,
+                "downloaded": true
+              },
+              "status": "queued",
+              "viewedAt": "2026-09-24T09:00:00.000Z",
+              "authorNotified": true,
+              "reaction": "reaction 1",
+              "viewCount": 1,
+              "postedAt": "2026-09-24T09:00:00.000Z",
+              "expiresAt": "2026-09-24T09:00:00.000Z",
+              "deletedAt": "2026-09-24T09:00:00.000Z",
+              "createdAt": "2026-09-24T09:00:00.000Z"
+            }
+          ]
+        }
+      ],
+      "nextCursor": null
+    }"#);
+    let api = support::MockApi::start(vec![
+        support::Reply::json(200, first),
+        support::Reply::json(200, last),
+    ])
+    .await;
+    let params: types::StoriesListParams = support::from_json(r#"{"contactId":"contactId 1","unviewed":true,"limit":50,"cursor":"cursor 1"}"#);
+    let items = api.client().stories().list("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", params).to_vec().await.unwrap();
+    support::assert_json(&items, &support::json(r#"[
+      {
+        "object": "story_group",
+        "accountId": "accountId 1",
+        "contactId": "contactId 1",
+        "profileName": "profileName 1",
+        "username": "username 1",
+        "muted": true,
+        "storyCount": 1,
+        "unviewedCount": 1,
+        "lastPostedAt": "2026-09-24T09:00:00.000Z",
+        "stories": [
+          {
+            "object": "story",
+            "id": "id 1",
+            "projectId": "projectId 1",
+            "accountId": "accountId 1",
+            "contactId": "contactId 1",
+            "own": true,
+            "profileName": "profileName 1",
+            "username": "username 1",
+            "type": "text",
+            "text": "text 1",
+            "backgroundColor": "backgroundColor 1",
+            "font": 1,
+            "media": {
+              "url": "url 1",
+              "mimeType": "mimeType 1",
+              "filename": "filename 1",
+              "size": 1,
+              "width": 1,
+              "height": 1,
+              "durationSeconds": 1,
+              "gifPlayback": true,
+              "downloaded": true
+            },
+            "status": "queued",
+            "viewedAt": "2026-09-24T09:00:00.000Z",
+            "authorNotified": true,
+            "reaction": "reaction 1",
+            "viewCount": 1,
+            "postedAt": "2026-09-24T09:00:00.000Z",
+            "expiresAt": "2026-09-24T09:00:00.000Z",
+            "deletedAt": "2026-09-24T09:00:00.000Z",
+            "createdAt": "2026-09-24T09:00:00.000Z"
+          }
+        ]
+      },
+      {
+        "object": "story_group",
+        "accountId": "accountId 1",
+        "contactId": "contactId 1",
+        "profileName": "profileName 1",
+        "username": "username 1",
+        "muted": true,
+        "storyCount": 1,
+        "unviewedCount": 1,
+        "lastPostedAt": "2026-09-24T09:00:00.000Z",
+        "stories": [
+          {
+            "object": "story",
+            "id": "id 1",
+            "projectId": "projectId 1",
+            "accountId": "accountId 1",
+            "contactId": "contactId 1",
+            "own": true,
+            "profileName": "profileName 1",
+            "username": "username 1",
+            "type": "text",
+            "text": "text 1",
+            "backgroundColor": "backgroundColor 1",
+            "font": 1,
+            "media": {
+              "url": "url 1",
+              "mimeType": "mimeType 1",
+              "filename": "filename 1",
+              "size": 1,
+              "width": 1,
+              "height": 1,
+              "durationSeconds": 1,
+              "gifPlayback": true,
+              "downloaded": true
+            },
+            "status": "queued",
+            "viewedAt": "2026-09-24T09:00:00.000Z",
+            "authorNotified": true,
+            "reaction": "reaction 1",
+            "viewCount": 1,
+            "postedAt": "2026-09-24T09:00:00.000Z",
+            "expiresAt": "2026-09-24T09:00:00.000Z",
+            "deletedAt": "2026-09-24T09:00:00.000Z",
+            "createdAt": "2026-09-24T09:00:00.000Z"
+          }
+        ]
+      }
+    ]"#));
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 2);
+    assert_eq!(calls[0].method, "GET");
+    assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/stories");
+    assert_eq!(calls[0].query, support::pairs(&[("contactId", "contactId 1"), ("unviewed", "true"), ("limit", "50"), ("cursor", "cursor 1")]));
+    assert_eq!(calls[1].query, support::pairs(&[("contactId", "contactId 1"), ("unviewed", "true"), ("limit", "50"), ("cursor", "cursor_2")]));
+}
+
+#[tokio::test]
+async fn list_fetches_one_page() {
+    let page = support::json(r#"{
+      "object": "list",
+      "items": [
+        {
+          "object": "story_group",
+          "accountId": "accountId 1",
+          "contactId": "contactId 1",
+          "profileName": "profileName 1",
+          "username": "username 1",
+          "muted": true,
+          "storyCount": 1,
+          "unviewedCount": 1,
+          "lastPostedAt": "2026-09-24T09:00:00.000Z",
+          "stories": [
+            {
+              "object": "story",
+              "id": "id 1",
+              "projectId": "projectId 1",
+              "accountId": "accountId 1",
+              "contactId": "contactId 1",
+              "own": true,
+              "profileName": "profileName 1",
+              "username": "username 1",
+              "type": "text",
+              "text": "text 1",
+              "backgroundColor": "backgroundColor 1",
+              "font": 1,
+              "media": {
+                "url": "url 1",
+                "mimeType": "mimeType 1",
+                "filename": "filename 1",
+                "size": 1,
+                "width": 1,
+                "height": 1,
+                "durationSeconds": 1,
+                "gifPlayback": true,
+                "downloaded": true
+              },
+              "status": "queued",
+              "viewedAt": "2026-09-24T09:00:00.000Z",
+              "authorNotified": true,
+              "reaction": "reaction 1",
+              "viewCount": 1,
+              "postedAt": "2026-09-24T09:00:00.000Z",
+              "expiresAt": "2026-09-24T09:00:00.000Z",
+              "deletedAt": "2026-09-24T09:00:00.000Z",
+              "createdAt": "2026-09-24T09:00:00.000Z"
+            }
+          ]
+        }
+      ],
+      "nextCursor": null
+    }"#);
+    let api = support::MockApi::start(vec![support::Reply::json(200, page.clone())]).await;
+    let result = api.client().stories().list("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", Default::default()).page().await.unwrap();
+    support::assert_json(&result, &page);
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 1);
+    assert_eq!(calls[0].method, "GET");
+    assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/stories");
+    assert_eq!(calls[0].query, support::pairs(&[]));
+}
+
+#[tokio::test]
+async fn list_own_streams_every_page() {
+    let first = support::json(r#"{
+      "object": "list",
+      "items": [
+        {
+          "object": "story",
+          "id": "id 1",
+          "projectId": "projectId 1",
+          "accountId": "accountId 1",
+          "contactId": "contactId 1",
+          "own": true,
+          "profileName": "profileName 1",
+          "username": "username 1",
+          "type": "text",
+          "text": "text 1",
+          "backgroundColor": "backgroundColor 1",
+          "font": 1,
+          "media": {
+            "url": "url 1",
+            "mimeType": "mimeType 1",
+            "filename": "filename 1",
+            "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
+            "gifPlayback": true,
+            "downloaded": true
+          },
+          "status": "queued",
+          "viewedAt": "2026-09-24T09:00:00.000Z",
+          "authorNotified": true,
+          "reaction": "reaction 1",
+          "viewCount": 1,
+          "postedAt": "2026-09-24T09:00:00.000Z",
+          "expiresAt": "2026-09-24T09:00:00.000Z",
+          "deletedAt": "2026-09-24T09:00:00.000Z",
+          "createdAt": "2026-09-24T09:00:00.000Z"
+        }
+      ],
+      "nextCursor": "cursor_2"
+    }"#);
+    let last = support::json(r#"{
+      "object": "list",
+      "items": [
+        {
+          "object": "story",
+          "id": "id 1",
+          "projectId": "projectId 1",
+          "accountId": "accountId 1",
+          "contactId": "contactId 1",
+          "own": true,
+          "profileName": "profileName 1",
+          "username": "username 1",
+          "type": "text",
+          "text": "text 1",
+          "backgroundColor": "backgroundColor 1",
+          "font": 1,
+          "media": {
+            "url": "url 1",
+            "mimeType": "mimeType 1",
+            "filename": "filename 1",
+            "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
+            "gifPlayback": true,
+            "downloaded": true
+          },
+          "status": "queued",
+          "viewedAt": "2026-09-24T09:00:00.000Z",
+          "authorNotified": true,
+          "reaction": "reaction 1",
+          "viewCount": 1,
+          "postedAt": "2026-09-24T09:00:00.000Z",
+          "expiresAt": "2026-09-24T09:00:00.000Z",
+          "deletedAt": "2026-09-24T09:00:00.000Z",
+          "createdAt": "2026-09-24T09:00:00.000Z"
+        }
+      ],
+      "nextCursor": null
+    }"#);
+    let api = support::MockApi::start(vec![
+        support::Reply::json(200, first),
+        support::Reply::json(200, last),
+    ])
+    .await;
+    let params: types::StoriesListOwnParams = support::from_json(r#"{"limit":50,"cursor":"cursor 1"}"#);
+    let items = api.client().stories().list_own("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", params).to_vec().await.unwrap();
+    support::assert_json(&items, &support::json(r#"[
+      {
+        "object": "story",
+        "id": "id 1",
+        "projectId": "projectId 1",
+        "accountId": "accountId 1",
+        "contactId": "contactId 1",
+        "own": true,
+        "profileName": "profileName 1",
+        "username": "username 1",
+        "type": "text",
+        "text": "text 1",
+        "backgroundColor": "backgroundColor 1",
+        "font": 1,
+        "media": {
+          "url": "url 1",
+          "mimeType": "mimeType 1",
+          "filename": "filename 1",
+          "size": 1,
+          "width": 1,
+          "height": 1,
+          "durationSeconds": 1,
+          "gifPlayback": true,
+          "downloaded": true
+        },
+        "status": "queued",
+        "viewedAt": "2026-09-24T09:00:00.000Z",
+        "authorNotified": true,
+        "reaction": "reaction 1",
+        "viewCount": 1,
+        "postedAt": "2026-09-24T09:00:00.000Z",
+        "expiresAt": "2026-09-24T09:00:00.000Z",
+        "deletedAt": "2026-09-24T09:00:00.000Z",
+        "createdAt": "2026-09-24T09:00:00.000Z"
+      },
+      {
+        "object": "story",
+        "id": "id 1",
+        "projectId": "projectId 1",
+        "accountId": "accountId 1",
+        "contactId": "contactId 1",
+        "own": true,
+        "profileName": "profileName 1",
+        "username": "username 1",
+        "type": "text",
+        "text": "text 1",
+        "backgroundColor": "backgroundColor 1",
+        "font": 1,
+        "media": {
+          "url": "url 1",
+          "mimeType": "mimeType 1",
+          "filename": "filename 1",
+          "size": 1,
+          "width": 1,
+          "height": 1,
+          "durationSeconds": 1,
+          "gifPlayback": true,
+          "downloaded": true
+        },
+        "status": "queued",
+        "viewedAt": "2026-09-24T09:00:00.000Z",
+        "authorNotified": true,
+        "reaction": "reaction 1",
+        "viewCount": 1,
+        "postedAt": "2026-09-24T09:00:00.000Z",
+        "expiresAt": "2026-09-24T09:00:00.000Z",
+        "deletedAt": "2026-09-24T09:00:00.000Z",
+        "createdAt": "2026-09-24T09:00:00.000Z"
+      }
+    ]"#));
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 2);
+    assert_eq!(calls[0].method, "GET");
+    assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/stories/own");
+    assert_eq!(calls[0].query, support::pairs(&[("limit", "50"), ("cursor", "cursor 1")]));
+    assert_eq!(calls[1].query, support::pairs(&[("limit", "50"), ("cursor", "cursor_2")]));
+}
+
+#[tokio::test]
+async fn list_own_fetches_one_page() {
+    let page = support::json(r#"{
+      "object": "list",
+      "items": [
+        {
+          "object": "story",
+          "id": "id 1",
+          "projectId": "projectId 1",
+          "accountId": "accountId 1",
+          "contactId": "contactId 1",
+          "own": true,
+          "profileName": "profileName 1",
+          "username": "username 1",
+          "type": "text",
+          "text": "text 1",
+          "backgroundColor": "backgroundColor 1",
+          "font": 1,
+          "media": {
+            "url": "url 1",
+            "mimeType": "mimeType 1",
+            "filename": "filename 1",
+            "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
+            "gifPlayback": true,
+            "downloaded": true
+          },
+          "status": "queued",
+          "viewedAt": "2026-09-24T09:00:00.000Z",
+          "authorNotified": true,
+          "reaction": "reaction 1",
+          "viewCount": 1,
+          "postedAt": "2026-09-24T09:00:00.000Z",
+          "expiresAt": "2026-09-24T09:00:00.000Z",
+          "deletedAt": "2026-09-24T09:00:00.000Z",
+          "createdAt": "2026-09-24T09:00:00.000Z"
+        }
+      ],
+      "nextCursor": null
+    }"#);
+    let api = support::MockApi::start(vec![support::Reply::json(200, page.clone())]).await;
+    let result = api.client().stories().list_own("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", Default::default()).page().await.unwrap();
+    support::assert_json(&result, &page);
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 1);
+    assert_eq!(calls[0].method, "GET");
+    assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/stories/own");
+    assert_eq!(calls[0].query, support::pairs(&[]));
+}
+
+#[tokio::test]
+async fn get() {
+    let response = support::json(r#"{
+      "object": "story",
+      "id": "id 1",
+      "projectId": "projectId 1",
+      "accountId": "accountId 1",
+      "contactId": "contactId 1",
+      "own": true,
+      "profileName": "profileName 1",
+      "username": "username 1",
+      "type": "text",
+      "text": "text 1",
+      "backgroundColor": "backgroundColor 1",
+      "font": 1,
+      "media": {
+        "url": "url 1",
+        "mimeType": "mimeType 1",
+        "filename": "filename 1",
+        "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
+        "gifPlayback": true,
+        "downloaded": true
+      },
+      "status": "queued",
+      "viewedAt": "2026-09-24T09:00:00.000Z",
+      "authorNotified": true,
+      "reaction": "reaction 1",
+      "viewCount": 1,
+      "postedAt": "2026-09-24T09:00:00.000Z",
+      "expiresAt": "2026-09-24T09:00:00.000Z",
+      "deletedAt": "2026-09-24T09:00:00.000Z",
+      "createdAt": "2026-09-24T09:00:00.000Z"
+    }"#);
+    let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+    let result = api.client().stories().get("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea").await.unwrap();
+    support::assert_json(&result, &response);
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 1);
+    assert_eq!(calls[0].method, "GET");
+    assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/stories/s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea");
+    assert_eq!(calls[0].query, support::pairs(&[]));
+    assert!(calls[0].body.is_none());
+    assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+}
+
+#[tokio::test]
+async fn get_media() {
+    let response = support::json(r#"{
+      "object": "media",
+      "storyId": "storyId 1",
+      "url": "url 1",
+      "mimeType": "mimeType 1",
+      "filename": "filename 1",
+      "size": 1
+    }"#);
+    let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+    let params: types::StoriesGetMediaParams = support::from_json(r#"{"redirect":true}"#);
+    let result = api.client().stories().get_media("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea", params).await.unwrap();
+    support::assert_json(&result, &response);
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 1);
+    assert_eq!(calls[0].method, "GET");
+    assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/stories/s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea/media");
+    assert_eq!(calls[0].query, support::pairs(&[("redirect", "true")]));
+    assert!(calls[0].body.is_none());
+    assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+}
+
+#[tokio::test]
+async fn get_media_without_params() {
+    let response = support::json(r#"{
+      "object": "media",
+      "storyId": "storyId 1",
+      "url": "url 1",
+      "mimeType": "mimeType 1",
+      "filename": "filename 1",
+      "size": 1
+    }"#);
+    let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+    let result = api.client().stories().get_media("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea", Default::default()).await.unwrap();
+    support::assert_json(&result, &response);
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 1);
+    assert_eq!(calls[0].method, "GET");
+    assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/stories/s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea/media");
+    assert_eq!(calls[0].query, support::pairs(&[]));
+    assert!(calls[0].body.is_none());
+    assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+}
+
+#[tokio::test]
+async fn list_viewers_streams_every_page() {
+    let first = support::json(r#"{
+      "object": "list",
+      "items": [
+        {
+          "object": "story_viewer",
+          "accountId": "accountId 1",
+          "storyId": "storyId 1",
+          "contactId": "contactId 1",
+          "viewedAt": "2026-09-24T09:00:00.000Z",
+          "reaction": "reaction 1",
+          "reactedAt": "2026-09-24T09:00:00.000Z"
+        }
+      ],
+      "nextCursor": "cursor_2"
+    }"#);
+    let last = support::json(r#"{
+      "object": "list",
+      "items": [
+        {
+          "object": "story_viewer",
+          "accountId": "accountId 1",
+          "storyId": "storyId 1",
+          "contactId": "contactId 1",
+          "viewedAt": "2026-09-24T09:00:00.000Z",
+          "reaction": "reaction 1",
+          "reactedAt": "2026-09-24T09:00:00.000Z"
+        }
+      ],
+      "nextCursor": null
+    }"#);
+    let api = support::MockApi::start(vec![
+        support::Reply::json(200, first),
+        support::Reply::json(200, last),
+    ])
+    .await;
+    let params: types::StoriesListViewersParams = support::from_json(r#"{"limit":50,"cursor":"cursor 1"}"#);
+    let items = api.client().stories().list_viewers("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea", params).to_vec().await.unwrap();
+    support::assert_json(&items, &support::json(r#"[
+      {
+        "object": "story_viewer",
+        "accountId": "accountId 1",
+        "storyId": "storyId 1",
+        "contactId": "contactId 1",
+        "viewedAt": "2026-09-24T09:00:00.000Z",
+        "reaction": "reaction 1",
+        "reactedAt": "2026-09-24T09:00:00.000Z"
+      },
+      {
+        "object": "story_viewer",
+        "accountId": "accountId 1",
+        "storyId": "storyId 1",
+        "contactId": "contactId 1",
+        "viewedAt": "2026-09-24T09:00:00.000Z",
+        "reaction": "reaction 1",
+        "reactedAt": "2026-09-24T09:00:00.000Z"
+      }
+    ]"#));
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 2);
+    assert_eq!(calls[0].method, "GET");
+    assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/stories/s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea/viewers");
+    assert_eq!(calls[0].query, support::pairs(&[("limit", "50"), ("cursor", "cursor 1")]));
+    assert_eq!(calls[1].query, support::pairs(&[("limit", "50"), ("cursor", "cursor_2")]));
+}
+
+#[tokio::test]
+async fn list_viewers_fetches_one_page() {
+    let page = support::json(r#"{
+      "object": "list",
+      "items": [
+        {
+          "object": "story_viewer",
+          "accountId": "accountId 1",
+          "storyId": "storyId 1",
+          "contactId": "contactId 1",
+          "viewedAt": "2026-09-24T09:00:00.000Z",
+          "reaction": "reaction 1",
+          "reactedAt": "2026-09-24T09:00:00.000Z"
+        }
+      ],
+      "nextCursor": null
+    }"#);
+    let api = support::MockApi::start(vec![support::Reply::json(200, page.clone())]).await;
+    let result = api.client().stories().list_viewers("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea", Default::default()).page().await.unwrap();
+    support::assert_json(&result, &page);
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 1);
+    assert_eq!(calls[0].method, "GET");
+    assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/stories/s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea/viewers");
+    assert_eq!(calls[0].query, support::pairs(&[]));
+}
+
+#[tokio::test]
+async fn view() {
+    let response = support::json(r#"{
+      "object": "story",
+      "id": "id 1",
+      "projectId": "projectId 1",
+      "accountId": "accountId 1",
+      "contactId": "contactId 1",
+      "own": true,
+      "profileName": "profileName 1",
+      "username": "username 1",
+      "type": "text",
+      "text": "text 1",
+      "backgroundColor": "backgroundColor 1",
+      "font": 1,
+      "media": {
+        "url": "url 1",
+        "mimeType": "mimeType 1",
+        "filename": "filename 1",
+        "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
+        "gifPlayback": true,
+        "downloaded": true
+      },
+      "status": "queued",
+      "viewedAt": "2026-09-24T09:00:00.000Z",
+      "authorNotified": true,
+      "reaction": "reaction 1",
+      "viewCount": 1,
+      "postedAt": "2026-09-24T09:00:00.000Z",
+      "expiresAt": "2026-09-24T09:00:00.000Z",
+      "deletedAt": "2026-09-24T09:00:00.000Z",
+      "createdAt": "2026-09-24T09:00:00.000Z"
+    }"#);
+    let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+    let result = api.client().stories().view("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea").await.unwrap();
+    support::assert_json(&result, &response);
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 1);
+    assert_eq!(calls[0].method, "POST");
+    assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/stories/s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea/view");
+    assert_eq!(calls[0].query, support::pairs(&[]));
+    assert!(calls[0].body.is_none());
+    assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_some_and(|key| !key.is_empty()));
+}
+
+#[tokio::test]
+async fn view_retries_with_one_key() {
+    let response = support::json(r#"{
+      "object": "story",
+      "id": "id 1",
+      "projectId": "projectId 1",
+      "accountId": "accountId 1",
+      "contactId": "contactId 1",
+      "own": true,
+      "profileName": "profileName 1",
+      "username": "username 1",
+      "type": "text",
+      "text": "text 1",
+      "backgroundColor": "backgroundColor 1",
+      "font": 1,
+      "media": {
+        "url": "url 1",
+        "mimeType": "mimeType 1",
+        "filename": "filename 1",
+        "size": 1,
+        "width": 1,
+        "height": 1,
+        "durationSeconds": 1,
+        "gifPlayback": true,
+        "downloaded": true
+      },
+      "status": "queued",
+      "viewedAt": "2026-09-24T09:00:00.000Z",
+      "authorNotified": true,
+      "reaction": "reaction 1",
+      "viewCount": 1,
+      "postedAt": "2026-09-24T09:00:00.000Z",
+      "expiresAt": "2026-09-24T09:00:00.000Z",
+      "deletedAt": "2026-09-24T09:00:00.000Z",
+      "createdAt": "2026-09-24T09:00:00.000Z"
+    }"#);
+    let api = support::MockApi::start(vec![support::Reply::status(503), support::Reply::json(200, response.clone())]).await;
+    let result = api.client().stories().view("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea").await.unwrap();
+    support::assert_json(&result, &response);
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 2);
+    let key = calls[0].header(sdk::IDEMPOTENCY_HEADER).unwrap();
+    assert!(!key.is_empty());
+    assert_eq!(calls[1].header(sdk::IDEMPOTENCY_HEADER), Some(key));
+    assert_eq!(calls[0].body, calls[1].body);
+}
+
+#[tokio::test]
+async fn react() {
+    let api = support::MockApi::start(vec![support::Reply::status(204)]).await;
+    let params: types::StoriesReactParams = support::from_json(r#"{"emoji":"emoji 1"}"#);
+    api.client().stories().react("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea", params).await.unwrap();
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 1);
+    assert_eq!(calls[0].method, "POST");
+    assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/stories/s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea/react");
+    assert_eq!(calls[0].query, support::pairs(&[]));
+    support::assert_json(&calls[0].body, &support::json(r#"{"emoji":"emoji 1"}"#));
+    assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_some_and(|key| !key.is_empty()));
+}
+
+#[tokio::test]
+async fn react_retries_with_one_key() {
+    let api = support::MockApi::start(vec![support::Reply::status(503), support::Reply::status(204)]).await;
+    let params: types::StoriesReactParams = support::from_json(r#"{"emoji":"emoji 1"}"#);
+    api.client().stories().react("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea", params).await.unwrap();
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 2);
+    let key = calls[0].header(sdk::IDEMPOTENCY_HEADER).unwrap();
+    assert!(!key.is_empty());
+    assert_eq!(calls[1].header(sdk::IDEMPOTENCY_HEADER), Some(key));
+    assert_eq!(calls[0].body, calls[1].body);
+}
+
+#[tokio::test]
+async fn delete() {
+    let api = support::MockApi::start(vec![support::Reply::status(204)]).await;
+    api.client().stories().delete("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea").await.unwrap();
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 1);
+    assert_eq!(calls[0].method, "DELETE");
+    assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/stories/s97fd2k4w8qc1n5x7v3b9yt6r0hjm2ea");
+    assert_eq!(calls[0].query, support::pairs(&[]));
+    assert!(calls[0].body.is_none());
+    assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
 }
