@@ -67,6 +67,7 @@ async fn list_streams_every_page() {
               "width": 1,
               "height": 1,
               "durationSeconds": 1,
+              "gifPlayback": true,
               "downloaded": true
             },
             "location": {
@@ -116,9 +117,11 @@ async fn list_streams_every_page() {
               "mentions 1"
             ],
             "forwarded": true,
+            "forwardedManyTimes": true,
             "viewOnce": true,
             "starred": true,
             "replyToMessageId": "replyToMessageId 1",
+            "replyToStoryId": "replyToStoryId 1",
             "status": "queued",
             "error": {
               "code": "not_on_whatsapp",
@@ -182,6 +185,7 @@ async fn list_streams_every_page() {
               "width": 1,
               "height": 1,
               "durationSeconds": 1,
+              "gifPlayback": true,
               "downloaded": true
             },
             "location": {
@@ -231,9 +235,11 @@ async fn list_streams_every_page() {
               "mentions 1"
             ],
             "forwarded": true,
+            "forwardedManyTimes": true,
             "viewOnce": true,
             "starred": true,
             "replyToMessageId": "replyToMessageId 1",
+            "replyToStoryId": "replyToStoryId 1",
             "status": "queued",
             "error": {
               "code": "not_on_whatsapp",
@@ -309,6 +315,7 @@ async fn list_streams_every_page() {
             "width": 1,
             "height": 1,
             "durationSeconds": 1,
+            "gifPlayback": true,
             "downloaded": true
           },
           "location": {
@@ -358,9 +365,11 @@ async fn list_streams_every_page() {
             "mentions 1"
           ],
           "forwarded": true,
+          "forwardedManyTimes": true,
           "viewOnce": true,
           "starred": true,
           "replyToMessageId": "replyToMessageId 1",
+          "replyToStoryId": "replyToStoryId 1",
           "status": "queued",
           "error": {
             "code": "not_on_whatsapp",
@@ -418,6 +427,7 @@ async fn list_streams_every_page() {
             "width": 1,
             "height": 1,
             "durationSeconds": 1,
+            "gifPlayback": true,
             "downloaded": true
           },
           "location": {
@@ -467,9 +477,11 @@ async fn list_streams_every_page() {
             "mentions 1"
           ],
           "forwarded": true,
+          "forwardedManyTimes": true,
           "viewOnce": true,
           "starred": true,
           "replyToMessageId": "replyToMessageId 1",
+          "replyToStoryId": "replyToStoryId 1",
           "status": "queued",
           "error": {
             "code": "not_on_whatsapp",
@@ -541,6 +553,7 @@ async fn list_fetches_one_page() {
               "width": 1,
               "height": 1,
               "durationSeconds": 1,
+              "gifPlayback": true,
               "downloaded": true
             },
             "location": {
@@ -590,9 +603,11 @@ async fn list_fetches_one_page() {
               "mentions 1"
             ],
             "forwarded": true,
+            "forwardedManyTimes": true,
             "viewOnce": true,
             "starred": true,
             "replyToMessageId": "replyToMessageId 1",
+            "replyToStoryId": "replyToStoryId 1",
             "status": "queued",
             "error": {
               "code": "not_on_whatsapp",
@@ -665,6 +680,7 @@ async fn get() {
           "width": 1,
           "height": 1,
           "durationSeconds": 1,
+          "gifPlayback": true,
           "downloaded": true
         },
         "location": {
@@ -714,9 +730,11 @@ async fn get() {
           "mentions 1"
         ],
         "forwarded": true,
+        "forwardedManyTimes": true,
         "viewOnce": true,
         "starred": true,
         "replyToMessageId": "replyToMessageId 1",
+        "replyToStoryId": "replyToStoryId 1",
         "status": "queued",
         "error": {
           "code": "not_on_whatsapp",

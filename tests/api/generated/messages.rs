@@ -28,6 +28,7 @@ async fn reports_api_errors() {
         "thumbnailBase64": "thumbnailBase64 1"
       },
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "metadata": {
         "key": "value 1"
       }
@@ -67,6 +68,7 @@ async fn send() {
         "width": 1,
         "height": 1,
         "durationSeconds": 1,
+        "gifPlayback": true,
         "downloaded": true
       },
       "location": {
@@ -116,9 +118,11 @@ async fn send() {
         "mentions 1"
       ],
       "forwarded": true,
+      "forwardedManyTimes": true,
       "viewOnce": true,
       "starred": true,
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "status": "queued",
       "error": {
         "code": "not_on_whatsapp",
@@ -152,6 +156,7 @@ async fn send() {
         "thumbnailBase64": "thumbnailBase64 1"
       },
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "metadata": {
         "key": "value 1"
       }
@@ -181,6 +186,7 @@ async fn send() {
         "thumbnailBase64": "thumbnailBase64 1"
       },
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "metadata": {
         "key": "value 1"
       }
@@ -213,6 +219,7 @@ async fn send_retries_with_one_key() {
         "width": 1,
         "height": 1,
         "durationSeconds": 1,
+        "gifPlayback": true,
         "downloaded": true
       },
       "location": {
@@ -262,9 +269,11 @@ async fn send_retries_with_one_key() {
         "mentions 1"
       ],
       "forwarded": true,
+      "forwardedManyTimes": true,
       "viewOnce": true,
       "starred": true,
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "status": "queued",
       "error": {
         "code": "not_on_whatsapp",
@@ -298,6 +307,7 @@ async fn send_retries_with_one_key() {
         "thumbnailBase64": "thumbnailBase64 1"
       },
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "metadata": {
         "key": "value 1"
       }
@@ -340,6 +350,7 @@ async fn list_streams_every_page() {
             "width": 1,
             "height": 1,
             "durationSeconds": 1,
+            "gifPlayback": true,
             "downloaded": true
           },
           "location": {
@@ -389,9 +400,11 @@ async fn list_streams_every_page() {
             "mentions 1"
           ],
           "forwarded": true,
+          "forwardedManyTimes": true,
           "viewOnce": true,
           "starred": true,
           "replyToMessageId": "replyToMessageId 1",
+          "replyToStoryId": "replyToStoryId 1",
           "status": "queued",
           "error": {
             "code": "not_on_whatsapp",
@@ -435,6 +448,7 @@ async fn list_streams_every_page() {
             "width": 1,
             "height": 1,
             "durationSeconds": 1,
+            "gifPlayback": true,
             "downloaded": true
           },
           "location": {
@@ -484,9 +498,11 @@ async fn list_streams_every_page() {
             "mentions 1"
           ],
           "forwarded": true,
+          "forwardedManyTimes": true,
           "viewOnce": true,
           "starred": true,
           "replyToMessageId": "replyToMessageId 1",
+          "replyToStoryId": "replyToStoryId 1",
           "status": "queued",
           "error": {
             "code": "not_on_whatsapp",
@@ -542,6 +558,7 @@ async fn list_streams_every_page() {
           "width": 1,
           "height": 1,
           "durationSeconds": 1,
+          "gifPlayback": true,
           "downloaded": true
         },
         "location": {
@@ -591,9 +608,11 @@ async fn list_streams_every_page() {
           "mentions 1"
         ],
         "forwarded": true,
+        "forwardedManyTimes": true,
         "viewOnce": true,
         "starred": true,
         "replyToMessageId": "replyToMessageId 1",
+        "replyToStoryId": "replyToStoryId 1",
         "status": "queued",
         "error": {
           "code": "not_on_whatsapp",
@@ -631,6 +650,7 @@ async fn list_streams_every_page() {
           "width": 1,
           "height": 1,
           "durationSeconds": 1,
+          "gifPlayback": true,
           "downloaded": true
         },
         "location": {
@@ -680,9 +700,11 @@ async fn list_streams_every_page() {
           "mentions 1"
         ],
         "forwarded": true,
+        "forwardedManyTimes": true,
         "viewOnce": true,
         "starred": true,
         "replyToMessageId": "replyToMessageId 1",
+        "replyToStoryId": "replyToStoryId 1",
         "status": "queued",
         "error": {
           "code": "not_on_whatsapp",
@@ -734,6 +756,7 @@ async fn list_fetches_one_page() {
             "width": 1,
             "height": 1,
             "durationSeconds": 1,
+            "gifPlayback": true,
             "downloaded": true
           },
           "location": {
@@ -783,9 +806,11 @@ async fn list_fetches_one_page() {
             "mentions 1"
           ],
           "forwarded": true,
+          "forwardedManyTimes": true,
           "viewOnce": true,
           "starred": true,
           "replyToMessageId": "replyToMessageId 1",
+          "replyToStoryId": "replyToStoryId 1",
           "status": "queued",
           "error": {
             "code": "not_on_whatsapp",
@@ -838,6 +863,7 @@ async fn get() {
         "width": 1,
         "height": 1,
         "durationSeconds": 1,
+        "gifPlayback": true,
         "downloaded": true
       },
       "location": {
@@ -887,9 +913,11 @@ async fn get() {
         "mentions 1"
       ],
       "forwarded": true,
+      "forwardedManyTimes": true,
       "viewOnce": true,
       "starred": true,
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "status": "queued",
       "error": {
         "code": "not_on_whatsapp",
@@ -986,6 +1014,7 @@ async fn edit() {
         "width": 1,
         "height": 1,
         "durationSeconds": 1,
+        "gifPlayback": true,
         "downloaded": true
       },
       "location": {
@@ -1035,9 +1064,11 @@ async fn edit() {
         "mentions 1"
       ],
       "forwarded": true,
+      "forwardedManyTimes": true,
       "viewOnce": true,
       "starred": true,
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "status": "queued",
       "error": {
         "code": "not_on_whatsapp",
@@ -1157,6 +1188,7 @@ async fn vote() {
         "width": 1,
         "height": 1,
         "durationSeconds": 1,
+        "gifPlayback": true,
         "downloaded": true
       },
       "location": {
@@ -1206,9 +1238,11 @@ async fn vote() {
         "mentions 1"
       ],
       "forwarded": true,
+      "forwardedManyTimes": true,
       "viewOnce": true,
       "starred": true,
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "status": "queued",
       "error": {
         "code": "not_on_whatsapp",
@@ -1261,6 +1295,7 @@ async fn vote_retries_with_one_key() {
         "width": 1,
         "height": 1,
         "durationSeconds": 1,
+        "gifPlayback": true,
         "downloaded": true
       },
       "location": {
@@ -1310,9 +1345,11 @@ async fn vote_retries_with_one_key() {
         "mentions 1"
       ],
       "forwarded": true,
+      "forwardedManyTimes": true,
       "viewOnce": true,
       "starred": true,
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "status": "queued",
       "error": {
         "code": "not_on_whatsapp",
@@ -1330,6 +1367,231 @@ async fn vote_retries_with_one_key() {
     let api = support::MockApi::start(vec![support::Reply::status(503), support::Reply::json(200, response.clone())]).await;
     let params: types::MessagesVoteParams = support::from_json(r#"{"options":["options 1"]}"#);
     let result = api.client().messages().vote("m17d0a9w2sqc7k3v8x1n5ybr6t4hjp2e", params).await.unwrap();
+    support::assert_json(&result, &response);
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 2);
+    let key = calls[0].header(sdk::IDEMPOTENCY_HEADER).unwrap();
+    assert!(!key.is_empty());
+    assert_eq!(calls[1].header(sdk::IDEMPOTENCY_HEADER), Some(key));
+    assert_eq!(calls[0].body, calls[1].body);
+}
+
+#[tokio::test]
+async fn forward() {
+    let response = support::json(r#"{
+      "object": "list",
+      "items": [
+        {
+          "object": "message",
+          "id": "id 1",
+          "projectId": "projectId 1",
+          "accountId": "accountId 1",
+          "chatId": "chatId 1",
+          "chatType": "direct",
+          "direction": "inbound",
+          "source": "api",
+          "from": "from 1",
+          "to": "to 1",
+          "profileName": "profileName 1",
+          "username": "username 1",
+          "type": "text",
+          "text": "text 1",
+          "media": {
+            "url": "url 1",
+            "mimeType": "mimeType 1",
+            "filename": "filename 1",
+            "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
+            "gifPlayback": true,
+            "downloaded": true
+          },
+          "location": {
+            "latitude": 1.5,
+            "longitude": 1.5,
+            "name": "name 1",
+            "address": "address 1"
+          },
+          "contact": {
+            "name": "name 1",
+            "phone": "phone 1"
+          },
+          "contacts": [
+            {
+              "name": "name 1",
+              "phone": "phone 1"
+            }
+          ],
+          "poll": {
+            "name": "name 1",
+            "options": [
+              {
+                "name": "name 1",
+                "voteCount": 1
+              }
+            ],
+            "selectableCount": 1,
+            "voterCount": 1
+          },
+          "calendarEvent": {
+            "name": "name 1",
+            "description": "description 1",
+            "startsAt": "2026-09-24T09:00:00.000Z",
+            "endsAt": "2026-09-24T09:00:00.000Z",
+            "location": {
+              "name": "name 1",
+              "address": "address 1",
+              "latitude": 1.5,
+              "longitude": 1.5
+            },
+            "callType": "audio",
+            "joinUrl": "joinUrl 1",
+            "allowExtraGuests": true,
+            "cancelled": true
+          },
+          "mentions": [
+            "mentions 1"
+          ],
+          "forwarded": true,
+          "forwardedManyTimes": true,
+          "viewOnce": true,
+          "starred": true,
+          "replyToMessageId": "replyToMessageId 1",
+          "replyToStoryId": "replyToStoryId 1",
+          "status": "queued",
+          "error": {
+            "code": "not_on_whatsapp",
+            "message": "message 1"
+          },
+          "metadata": {
+            "key": "value 1"
+          },
+          "sentAt": "2026-09-24T09:00:00.000Z",
+          "editedAt": "2026-09-24T09:00:00.000Z",
+          "deletedAt": "2026-09-24T09:00:00.000Z",
+          "createdAt": "2026-09-24T09:00:00.000Z",
+          "updatedAt": "2026-09-24T09:00:00.000Z"
+        }
+      ],
+      "nextCursor": "nextCursor 1"
+    }"#);
+    let api = support::MockApi::start(vec![support::Reply::json(202, response.clone())]).await;
+    let params: types::MessagesForwardParams = support::from_json(r#"{"to":["to 1"]}"#);
+    let result = api.client().messages().forward("m17d0a9w2sqc7k3v8x1n5ybr6t4hjp2e", params).await.unwrap();
+    support::assert_json(&result, &response);
+    let calls = api.calls().await;
+    assert_eq!(calls.len(), 1);
+    assert_eq!(calls[0].method, "POST");
+    assert_eq!(calls[0].path, "/v1/messages/m17d0a9w2sqc7k3v8x1n5ybr6t4hjp2e/forward");
+    assert_eq!(calls[0].query, support::pairs(&[]));
+    support::assert_json(&calls[0].body, &support::json(r#"{"to":["to 1"]}"#));
+    assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_some_and(|key| !key.is_empty()));
+}
+
+#[tokio::test]
+async fn forward_retries_with_one_key() {
+    let response = support::json(r#"{
+      "object": "list",
+      "items": [
+        {
+          "object": "message",
+          "id": "id 1",
+          "projectId": "projectId 1",
+          "accountId": "accountId 1",
+          "chatId": "chatId 1",
+          "chatType": "direct",
+          "direction": "inbound",
+          "source": "api",
+          "from": "from 1",
+          "to": "to 1",
+          "profileName": "profileName 1",
+          "username": "username 1",
+          "type": "text",
+          "text": "text 1",
+          "media": {
+            "url": "url 1",
+            "mimeType": "mimeType 1",
+            "filename": "filename 1",
+            "size": 1,
+            "width": 1,
+            "height": 1,
+            "durationSeconds": 1,
+            "gifPlayback": true,
+            "downloaded": true
+          },
+          "location": {
+            "latitude": 1.5,
+            "longitude": 1.5,
+            "name": "name 1",
+            "address": "address 1"
+          },
+          "contact": {
+            "name": "name 1",
+            "phone": "phone 1"
+          },
+          "contacts": [
+            {
+              "name": "name 1",
+              "phone": "phone 1"
+            }
+          ],
+          "poll": {
+            "name": "name 1",
+            "options": [
+              {
+                "name": "name 1",
+                "voteCount": 1
+              }
+            ],
+            "selectableCount": 1,
+            "voterCount": 1
+          },
+          "calendarEvent": {
+            "name": "name 1",
+            "description": "description 1",
+            "startsAt": "2026-09-24T09:00:00.000Z",
+            "endsAt": "2026-09-24T09:00:00.000Z",
+            "location": {
+              "name": "name 1",
+              "address": "address 1",
+              "latitude": 1.5,
+              "longitude": 1.5
+            },
+            "callType": "audio",
+            "joinUrl": "joinUrl 1",
+            "allowExtraGuests": true,
+            "cancelled": true
+          },
+          "mentions": [
+            "mentions 1"
+          ],
+          "forwarded": true,
+          "forwardedManyTimes": true,
+          "viewOnce": true,
+          "starred": true,
+          "replyToMessageId": "replyToMessageId 1",
+          "replyToStoryId": "replyToStoryId 1",
+          "status": "queued",
+          "error": {
+            "code": "not_on_whatsapp",
+            "message": "message 1"
+          },
+          "metadata": {
+            "key": "value 1"
+          },
+          "sentAt": "2026-09-24T09:00:00.000Z",
+          "editedAt": "2026-09-24T09:00:00.000Z",
+          "deletedAt": "2026-09-24T09:00:00.000Z",
+          "createdAt": "2026-09-24T09:00:00.000Z",
+          "updatedAt": "2026-09-24T09:00:00.000Z"
+        }
+      ],
+      "nextCursor": "nextCursor 1"
+    }"#);
+    let api = support::MockApi::start(vec![support::Reply::status(503), support::Reply::json(202, response.clone())]).await;
+    let params: types::MessagesForwardParams = support::from_json(r#"{"to":["to 1"]}"#);
+    let result = api.client().messages().forward("m17d0a9w2sqc7k3v8x1n5ybr6t4hjp2e", params).await.unwrap();
     support::assert_json(&result, &response);
     let calls = api.calls().await;
     assert_eq!(calls.len(), 2);
@@ -1364,6 +1626,7 @@ async fn star() {
         "width": 1,
         "height": 1,
         "durationSeconds": 1,
+        "gifPlayback": true,
         "downloaded": true
       },
       "location": {
@@ -1413,9 +1676,11 @@ async fn star() {
         "mentions 1"
       ],
       "forwarded": true,
+      "forwardedManyTimes": true,
       "viewOnce": true,
       "starred": true,
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "status": "queued",
       "error": {
         "code": "not_on_whatsapp",
@@ -1467,6 +1732,7 @@ async fn star_retries_with_one_key() {
         "width": 1,
         "height": 1,
         "durationSeconds": 1,
+        "gifPlayback": true,
         "downloaded": true
       },
       "location": {
@@ -1516,9 +1782,11 @@ async fn star_retries_with_one_key() {
         "mentions 1"
       ],
       "forwarded": true,
+      "forwardedManyTimes": true,
       "viewOnce": true,
       "starred": true,
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "status": "queued",
       "error": {
         "code": "not_on_whatsapp",
@@ -1569,6 +1837,7 @@ async fn unstar() {
         "width": 1,
         "height": 1,
         "durationSeconds": 1,
+        "gifPlayback": true,
         "downloaded": true
       },
       "location": {
@@ -1618,9 +1887,11 @@ async fn unstar() {
         "mentions 1"
       ],
       "forwarded": true,
+      "forwardedManyTimes": true,
       "viewOnce": true,
       "starred": true,
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "status": "queued",
       "error": {
         "code": "not_on_whatsapp",
@@ -1672,6 +1943,7 @@ async fn unstar_retries_with_one_key() {
         "width": 1,
         "height": 1,
         "durationSeconds": 1,
+        "gifPlayback": true,
         "downloaded": true
       },
       "location": {
@@ -1721,9 +1993,11 @@ async fn unstar_retries_with_one_key() {
         "mentions 1"
       ],
       "forwarded": true,
+      "forwardedManyTimes": true,
       "viewOnce": true,
       "starred": true,
       "replyToMessageId": "replyToMessageId 1",
+      "replyToStoryId": "replyToStoryId 1",
       "status": "queued",
       "error": {
         "code": "not_on_whatsapp",

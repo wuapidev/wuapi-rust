@@ -17,6 +17,8 @@ use crate::types;
 /// | `account.qr_code_issued`, `account.pairing_code_issued`, `account.connected`, `account.disconnected`, `account.failed` | Fired on real transitions: `account.qr_code_issued` when the account enters `qr_ready` (not on each QR rotation; poll the account for the current `qrCodeUrl`), `account.pairing_code_issued` when a new pairing code is issued, `account.disconnected` when the account loses its connection: at once when it does not recover on its own (`disconnectReason` `logged_out`, for example), or, for a drop the session reconnects from by itself, only if it is not `ready` again within a short reconnect grace (currently 20 seconds; `status` may then read `initializing` or `authenticating` while it keeps retrying), so a quick reconnect fires neither this nor `account.connected`; `account.connected` on `ready` (the first link, or back after `account.disconnected`), `account.failed` on `failed`. Deleting an account fires nothing. | `account` |
 /// | `message.received`, `message.sent`, `message.delivered`, `message.read`, `message.failed`, `message.deleted` | `message.sent` also fires for messages sent from the phone (`source: phone`) and for stories and channel posts. `message.deleted` carries the row with `deletedAt` set and the content cleared. | `message` |
 /// | `message.edited` | A message was edited. `previousAttributes.text` is the text before. | `message` |
+/// | `story.received`, `story.deleted` | A contact posted a story (its file is on demand), or deleted one before it expired (`deletedAt` set, content cleared). Only for accounts with stories on. A story that expires fires nothing. | `story` |
+/// | `story.viewed`, `story.reacted` | A contact saw a story the account posted (once per contact and story), or reacted to it, changed or removed the reaction. | `story_viewer` |
 /// | `poll.voted` | Someone voted in a poll. | `poll_vote` |
 /// | `group.joined` | The account joined or created a group. | `group` |
 /// | `group.updated` | A group changed. | `group_change` |
@@ -27,6 +29,7 @@ use crate::types;
 /// | `contact.picture_updated` | A contact or group picture changed or was removed. | `picture_change` |
 /// | `contact.updated` | A contact changed their About text. Fields WhatsApp did not send are `null`. | `contact` |
 /// | `blocklist.updated` | The blocklist changed. | `blocklist_change` |
+/// | `sticker.favorites_updated` | The account's favorite stickers changed: one was added or removed, or the whole list was read from WhatsApp again (one event, with counts). | `sticker_favorites_change` |
 /// | `label.updated` | A label was edited or (un)assigned to a chat or message. The full sync replays labels this way, which is how the label list arrives. | `label_change` |
 /// | `call.received`, `call.ended` | `call.received` on an incoming call (reject it with `POST .../calls/{callId}/reject`), `call.ended` when it ends or is rejected. | `call` |
 /// | `channel.message_received`, `channel.message_updated` | A new message in a followed channel, or new views and reactions on one. Not stored. | `channel_message` |

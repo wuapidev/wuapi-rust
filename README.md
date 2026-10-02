@@ -363,7 +363,7 @@ async fn raw(client: &Wuapi) -> Result<serde_json::Value, wuapi::Error> {
 
 ## Generated code
 
-This crate, version 0.11.0, is generated from the wuapi OpenAPI spec: its types, methods, tests and this README. Do not edit it by hand. Report problems at [wuapi.dev/support](https://wuapi.dev/support).
+This crate, version 0.12.0, is generated from the wuapi OpenAPI spec: its types, methods, tests and this README. Do not edit it by hand. Report problems at [wuapi.dev/support](https://wuapi.dev/support).
 
 ## License
 

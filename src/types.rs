@@ -674,20 +674,23 @@ string_enum! {
 /// A message's file. Received media is downloaded on demand by default (an account's `mediaAutoDownload`): until someone asks for it, the file stays on WhatsApp, `downloaded` is `false` and `url` is `https://api.wuapi.dev/v1/messages/{messageId}/media`, which needs your API key, downloads the file once through the number's proxy and redirects to it. Once stored, `downloaded` is `true` and `url` is the file itself. Tools that fetch `url` without headers (no-code automations) must send the API key (`Authorization: Bearer`) when `downloaded` is `false`, or call the endpoint with `redirect=false` and use the `url` it returns, which needs no key.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct MessageMedia {
-    /// `downloaded: true`: the file itself. Received: stored by wuapi; the URL does not expire and needs no API key, so anyone who has it can download the file: treat it as a secret. It stops working when the message is deleted. Sent: the URL you gave, or, for a file sent with `media.uploadId`, the stored file (the same kind of URL as a received file's, working until the message is deleted). `downloaded: false`: `GET /v1/messages/{messageId}/media` on api.wuapi.dev, which needs the API key (`Authorization: Bearer`) and answers a redirect to the file. A file sent from the phone itself (`source: phone`) is handled like a received one. `null` when wuapi has nothing to fetch the file with. Messages imported by history sync (`source: history`) have no `media` at all: the import carries what a message was, not its file.
+    /// `downloaded: true`: the file itself. Received: stored by wuapi; the URL does not expire and needs no API key, so anyone who has it can download the file: treat it as a secret. It stops working when the message is deleted. Sent: the URL you gave, or, for a file sent with `media.uploadId`, the stored file (the same kind of URL as a received file's, working until the message is deleted). `downloaded: false`: `GET /v1/messages/{messageId}/media` on api.wuapi.dev, which needs the API key (`Authorization: Bearer`) and answers a redirect to the file. A file sent from the phone itself (`source: phone`) is handled like a received one. `null` when wuapi has nothing to fetch the file with. Messages imported by history sync (`source: history`) have no `media` at all: the import carries what a message was, not its file. A message forwarded with `POST /v1/messages/{messageId}/forward` has the media of the message it was forwarded from: the same stored file when wuapi holds one (it keeps working until every message that points at it is deleted), your own URL when that message was sent with one, and `downloaded: false` when the file is still only on WhatsApp.
     pub url: Option<String>,
     #[serde(rename = "mimeType")]
     pub mime_type: Option<String>,
     pub filename: Option<String>,
     /// Bytes, when known: what WhatsApp declared for a received file, the stored file's size, or what was uploaded for a message sent through the API (known at once for a file sent with `media.uploadId`, once `sent` for a URL).
     pub size: Option<i64>,
-    /// Pixels, for images, video and stickers. Today only for an image sent through the API (JPEG, PNG or GIF), once it is `sent`; `null` otherwise, including every received file: the WhatsApp engine does not report the dimensions of received media yet.
+    /// Pixels, for images, video and stickers. Today for an image (JPEG, PNG or GIF) or a WebP sticker sent through the API, once it is `sent`, and for a received sticker, as its sender declared them; `null` otherwise, including every other received file: the WhatsApp engine does not report the dimensions of received images and video yet. A forwarded message keeps its source's.
     pub width: Option<i64>,
     /// Pixels. Set and `null` together with `width`.
     pub height: Option<i64>,
     /// Length of an audio, voice note or video, in seconds. `null` when unknown, which today is always: the WhatsApp engine does not report it yet.
     #[serde(rename = "durationSeconds")]
     pub duration_seconds: Option<i64>,
+    /// `true` for a video that WhatsApp plays as a GIF: it loops, muted, with no controls. Set on a received GIF (the message's `type` is `video`) and on a video sent with `media.gifPlayback`. `false` for everything else.
+    #[serde(rename = "gifPlayback")]
+    pub gif_playback: bool,
     /// `true`: `url` is the file. `false`: the file is still on WhatsApp; `url` fetches it on first use.
     pub downloaded: bool,
 }
@@ -792,6 +795,7 @@ pub struct MessageError {
     /// - `cancelled`: Deleted with `DELETE /v1/messages/{messageId}` while it was still queued; it was never sent.
     /// - `payment_required`: It was queued before proxy traffic paused for an unpaid invoice, and the pause lasted more than 24 hours.
     /// - `proxy_spend_cap_reached`: It was queued before proxy traffic paused at the monthly proxy spend cap, and the pause lasted more than 24 hours.
+    /// - `media_expired`: A forward whose file WhatsApp no longer has and wuapi never stored, found out while sending it.
     pub code: MessageErrorCode,
     pub message: String,
 }
@@ -812,6 +816,8 @@ string_enum! {
         PaymentRequired = "payment_required",
         /// `proxy_spend_cap_reached`
         ProxySpendCapReached = "proxy_spend_cap_reached",
+        /// `media_expired`
+        MediaExpired = "media_expired",
         @unknown Unknown,
     }
 }
@@ -858,13 +864,20 @@ pub struct Message {
     pub calendar_event: Option<MessageCalendarEvent>,
     /// Mentioned contact ids.
     pub mentions: Vec<String>,
+    /// WhatsApp shows it as forwarded: it was forwarded to this chat (by a contact, from the phone, or with `POST /v1/messages/{messageId}/forward`), or it was sent with `forwarded: true`.
     pub forwarded: bool,
+    /// WhatsApp's "Forwarded many times" (the double arrow): the message went through a chain of five or more forwards. Such a message can only be forwarded to one chat at a time (`POST /v1/messages/{messageId}/forward` with a single `to`). Always `false` when `forwarded` is `false`.
+    #[serde(rename = "forwardedManyTimes")]
+    pub forwarded_many_times: bool,
     #[serde(rename = "viewOnce")]
     pub view_once: bool,
     pub starred: bool,
     /// The wuapi id of the quoted (or reacted-to) message.
     #[serde(rename = "replyToMessageId")]
     pub reply_to_message_id: Option<String>,
+    /// The id of the story this message replies to, `null` when it replies to none. A contact's reply to a story the account posted names that story (its id is also its message id); a reply the account sent with `replyToStoryId` names the contact's story. `null` too when wuapi does not hold the story (it was posted before stories were on for the account, or it expired).
+    #[serde(rename = "replyToStoryId")]
+    pub reply_to_story_id: Option<String>,
     pub status: MessageStatus,
     /// Why it failed, when `status` is `failed`.
     pub error: Option<MessageError>,
@@ -1323,7 +1336,7 @@ pub struct SendTextMessageRequest {
     /// Groups only: mention every participant.
     #[serde(rename = "mentionAll", default, skip_serializing_if = "Option::is_none")]
     pub mention_all: Option<bool>,
-    /// Mark as forwarded.
+    /// Mark this new message as forwarded: the recipient sees the "Forwarded" label on content you supply. To forward a message wuapi already stores (its text, file, location or contact card, without moving any bytes), use `POST /v1/messages/{messageId}/forward` instead.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forwarded: Option<bool>,
     /// Match the chat's disappearing timer.
@@ -1331,9 +1344,12 @@ pub struct SendTextMessageRequest {
     pub disappearing_seconds: Option<DisappearingSeconds>,
     #[serde(rename = "linkPreview", default, skip_serializing_if = "Option::is_none")]
     pub link_preview: Option<SendLinkPreview>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts.
+    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
+    /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
+    #[serde(rename = "replyToStoryId", default, skip_serializing_if = "Option::is_none")]
+    pub reply_to_story_id: Option<String>,
     /// Up to 50 string values; keys 1-64 printable ASCII characters not starting with `$` or `_`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<std::collections::BTreeMap<String, String>>,
@@ -1358,6 +1374,7 @@ impl SendTextMessageRequest {
             disappearing_seconds: None,
             link_preview: None,
             reply_to_message_id: None,
+            reply_to_story_id: None,
             metadata: None,
         }
     }
@@ -1383,7 +1400,7 @@ pub struct SendImageMessageRequest {
     /// Groups only: mention every participant.
     #[serde(rename = "mentionAll", default, skip_serializing_if = "Option::is_none")]
     pub mention_all: Option<bool>,
-    /// Mark as forwarded.
+    /// Mark this new message as forwarded: the recipient sees the "Forwarded" label on content you supply. To forward a message wuapi already stores (its text, file, location or contact card, without moving any bytes), use `POST /v1/messages/{messageId}/forward` instead.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forwarded: Option<bool>,
     /// The recipient can open it once.
@@ -1392,9 +1409,12 @@ pub struct SendImageMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts.
+    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
+    /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
+    #[serde(rename = "replyToStoryId", default, skip_serializing_if = "Option::is_none")]
+    pub reply_to_story_id: Option<String>,
     /// Up to 50 string values; keys 1-64 printable ASCII characters not starting with `$` or `_`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<std::collections::BTreeMap<String, String>>,
@@ -1420,6 +1440,7 @@ impl SendImageMessageRequest {
             view_once: None,
             disappearing_seconds: None,
             reply_to_message_id: None,
+            reply_to_story_id: None,
             metadata: None,
         }
     }
@@ -1445,7 +1466,7 @@ pub struct SendVideoMessageRequest {
     /// Groups only: mention every participant.
     #[serde(rename = "mentionAll", default, skip_serializing_if = "Option::is_none")]
     pub mention_all: Option<bool>,
-    /// Mark as forwarded.
+    /// Mark this new message as forwarded: the recipient sees the "Forwarded" label on content you supply. To forward a message wuapi already stores (its text, file, location or contact card, without moving any bytes), use `POST /v1/messages/{messageId}/forward` instead.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forwarded: Option<bool>,
     /// The recipient can open it once.
@@ -1454,9 +1475,12 @@ pub struct SendVideoMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts.
+    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
+    /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
+    #[serde(rename = "replyToStoryId", default, skip_serializing_if = "Option::is_none")]
+    pub reply_to_story_id: Option<String>,
     /// Up to 50 string values; keys 1-64 printable ASCII characters not starting with `$` or `_`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<std::collections::BTreeMap<String, String>>,
@@ -1482,6 +1506,7 @@ impl SendVideoMessageRequest {
             view_once: None,
             disappearing_seconds: None,
             reply_to_message_id: None,
+            reply_to_story_id: None,
             metadata: None,
         }
     }
@@ -1507,7 +1532,7 @@ pub struct SendAudioMessageRequest {
     /// Groups only: mention every participant.
     #[serde(rename = "mentionAll", default, skip_serializing_if = "Option::is_none")]
     pub mention_all: Option<bool>,
-    /// Mark as forwarded.
+    /// Mark this new message as forwarded: the recipient sees the "Forwarded" label on content you supply. To forward a message wuapi already stores (its text, file, location or contact card, without moving any bytes), use `POST /v1/messages/{messageId}/forward` instead.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forwarded: Option<bool>,
     /// The recipient can open it once.
@@ -1516,9 +1541,12 @@ pub struct SendAudioMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts.
+    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
+    /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
+    #[serde(rename = "replyToStoryId", default, skip_serializing_if = "Option::is_none")]
+    pub reply_to_story_id: Option<String>,
     /// Up to 50 string values; keys 1-64 printable ASCII characters not starting with `$` or `_`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<std::collections::BTreeMap<String, String>>,
@@ -1540,6 +1568,7 @@ impl SendAudioMessageRequest {
             view_once: None,
             disappearing_seconds: None,
             reply_to_message_id: None,
+            reply_to_story_id: None,
             metadata: None,
         }
     }
@@ -1565,7 +1594,7 @@ pub struct SendVoiceMessageRequest {
     /// Groups only: mention every participant.
     #[serde(rename = "mentionAll", default, skip_serializing_if = "Option::is_none")]
     pub mention_all: Option<bool>,
-    /// Mark as forwarded.
+    /// Mark this new message as forwarded: the recipient sees the "Forwarded" label on content you supply. To forward a message wuapi already stores (its text, file, location or contact card, without moving any bytes), use `POST /v1/messages/{messageId}/forward` instead.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forwarded: Option<bool>,
     /// The recipient can open it once.
@@ -1574,9 +1603,12 @@ pub struct SendVoiceMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts.
+    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
+    /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
+    #[serde(rename = "replyToStoryId", default, skip_serializing_if = "Option::is_none")]
+    pub reply_to_story_id: Option<String>,
     /// Up to 50 string values; keys 1-64 printable ASCII characters not starting with `$` or `_`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<std::collections::BTreeMap<String, String>>,
@@ -1598,6 +1630,7 @@ impl SendVoiceMessageRequest {
             view_once: None,
             disappearing_seconds: None,
             reply_to_message_id: None,
+            reply_to_story_id: None,
             metadata: None,
         }
     }
@@ -1623,15 +1656,18 @@ pub struct SendDocumentMessageRequest {
     /// Groups only: mention every participant.
     #[serde(rename = "mentionAll", default, skip_serializing_if = "Option::is_none")]
     pub mention_all: Option<bool>,
-    /// Mark as forwarded.
+    /// Mark this new message as forwarded: the recipient sees the "Forwarded" label on content you supply. To forward a message wuapi already stores (its text, file, location or contact card, without moving any bytes), use `POST /v1/messages/{messageId}/forward` instead.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forwarded: Option<bool>,
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts.
+    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
+    /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
+    #[serde(rename = "replyToStoryId", default, skip_serializing_if = "Option::is_none")]
+    pub reply_to_story_id: Option<String>,
     /// Up to 50 string values; keys 1-64 printable ASCII characters not starting with `$` or `_`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<std::collections::BTreeMap<String, String>>,
@@ -1652,6 +1688,7 @@ impl SendDocumentMessageRequest {
             forwarded: None,
             disappearing_seconds: None,
             reply_to_message_id: None,
+            reply_to_story_id: None,
             metadata: None,
         }
     }
@@ -1677,15 +1714,18 @@ pub struct SendStickerMessageRequest {
     /// Groups only: mention every participant.
     #[serde(rename = "mentionAll", default, skip_serializing_if = "Option::is_none")]
     pub mention_all: Option<bool>,
-    /// Mark as forwarded.
+    /// Mark this new message as forwarded: the recipient sees the "Forwarded" label on content you supply. To forward a message wuapi already stores (its text, file, location or contact card, without moving any bytes), use `POST /v1/messages/{messageId}/forward` instead.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forwarded: Option<bool>,
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts.
+    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
+    /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
+    #[serde(rename = "replyToStoryId", default, skip_serializing_if = "Option::is_none")]
+    pub reply_to_story_id: Option<String>,
     /// Up to 50 string values; keys 1-64 printable ASCII characters not starting with `$` or `_`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<std::collections::BTreeMap<String, String>>,
@@ -1706,6 +1746,7 @@ impl SendStickerMessageRequest {
             forwarded: None,
             disappearing_seconds: None,
             reply_to_message_id: None,
+            reply_to_story_id: None,
             metadata: None,
         }
     }
@@ -1728,15 +1769,18 @@ pub struct SendLocationMessageRequest {
     /// Groups only: mention every participant.
     #[serde(rename = "mentionAll", default, skip_serializing_if = "Option::is_none")]
     pub mention_all: Option<bool>,
-    /// Mark as forwarded.
+    /// Mark this new message as forwarded: the recipient sees the "Forwarded" label on content you supply. To forward a message wuapi already stores (its text, file, location or contact card, without moving any bytes), use `POST /v1/messages/{messageId}/forward` instead.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forwarded: Option<bool>,
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts.
+    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
+    /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
+    #[serde(rename = "replyToStoryId", default, skip_serializing_if = "Option::is_none")]
+    pub reply_to_story_id: Option<String>,
     /// Up to 50 string values; keys 1-64 printable ASCII characters not starting with `$` or `_`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<std::collections::BTreeMap<String, String>>,
@@ -1760,6 +1804,7 @@ impl SendLocationMessageRequest {
             forwarded: None,
             disappearing_seconds: None,
             reply_to_message_id: None,
+            reply_to_story_id: None,
             metadata: None,
         }
     }
@@ -1782,15 +1827,18 @@ pub struct SendContactMessageRequest {
     /// Groups only: mention every participant.
     #[serde(rename = "mentionAll", default, skip_serializing_if = "Option::is_none")]
     pub mention_all: Option<bool>,
-    /// Mark as forwarded.
+    /// Mark this new message as forwarded: the recipient sees the "Forwarded" label on content you supply. To forward a message wuapi already stores (its text, file, location or contact card, without moving any bytes), use `POST /v1/messages/{messageId}/forward` instead.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forwarded: Option<bool>,
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts.
+    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
+    /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
+    #[serde(rename = "replyToStoryId", default, skip_serializing_if = "Option::is_none")]
+    pub reply_to_story_id: Option<String>,
     /// Up to 50 string values; keys 1-64 printable ASCII characters not starting with `$` or `_`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<std::collections::BTreeMap<String, String>>,
@@ -1810,6 +1858,7 @@ impl SendContactMessageRequest {
             forwarded: None,
             disappearing_seconds: None,
             reply_to_message_id: None,
+            reply_to_story_id: None,
             metadata: None,
         }
     }
@@ -1833,15 +1882,18 @@ pub struct SendContactsMessageRequest {
     /// Groups only: mention every participant.
     #[serde(rename = "mentionAll", default, skip_serializing_if = "Option::is_none")]
     pub mention_all: Option<bool>,
-    /// Mark as forwarded.
+    /// Mark this new message as forwarded: the recipient sees the "Forwarded" label on content you supply. To forward a message wuapi already stores (its text, file, location or contact card, without moving any bytes), use `POST /v1/messages/{messageId}/forward` instead.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forwarded: Option<bool>,
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts.
+    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
+    /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
+    #[serde(rename = "replyToStoryId", default, skip_serializing_if = "Option::is_none")]
+    pub reply_to_story_id: Option<String>,
     /// Up to 50 string values; keys 1-64 printable ASCII characters not starting with `$` or `_`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<std::collections::BTreeMap<String, String>>,
@@ -1865,6 +1917,7 @@ impl SendContactsMessageRequest {
             forwarded: None,
             disappearing_seconds: None,
             reply_to_message_id: None,
+            reply_to_story_id: None,
             metadata: None,
         }
     }
@@ -1887,15 +1940,18 @@ pub struct SendPollMessageRequest {
     /// Groups only: mention every participant.
     #[serde(rename = "mentionAll", default, skip_serializing_if = "Option::is_none")]
     pub mention_all: Option<bool>,
-    /// Mark as forwarded.
+    /// Mark this new message as forwarded: the recipient sees the "Forwarded" label on content you supply. To forward a message wuapi already stores (its text, file, location or contact card, without moving any bytes), use `POST /v1/messages/{messageId}/forward` instead.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forwarded: Option<bool>,
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts.
+    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
+    /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
+    #[serde(rename = "replyToStoryId", default, skip_serializing_if = "Option::is_none")]
+    pub reply_to_story_id: Option<String>,
     /// Up to 50 string values; keys 1-64 printable ASCII characters not starting with `$` or `_`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<std::collections::BTreeMap<String, String>>,
@@ -1915,6 +1971,7 @@ impl SendPollMessageRequest {
             forwarded: None,
             disappearing_seconds: None,
             reply_to_message_id: None,
+            reply_to_story_id: None,
             metadata: None,
         }
     }
@@ -1938,15 +1995,18 @@ pub struct SendCalendarEventMessageRequest {
     /// Groups only: mention every participant.
     #[serde(rename = "mentionAll", default, skip_serializing_if = "Option::is_none")]
     pub mention_all: Option<bool>,
-    /// Mark as forwarded.
+    /// Mark this new message as forwarded: the recipient sees the "Forwarded" label on content you supply. To forward a message wuapi already stores (its text, file, location or contact card, without moving any bytes), use `POST /v1/messages/{messageId}/forward` instead.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forwarded: Option<bool>,
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts.
+    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
+    /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
+    #[serde(rename = "replyToStoryId", default, skip_serializing_if = "Option::is_none")]
+    pub reply_to_story_id: Option<String>,
     /// Up to 50 string values; keys 1-64 printable ASCII characters not starting with `$` or `_`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<std::collections::BTreeMap<String, String>>,
@@ -1970,6 +2030,7 @@ impl SendCalendarEventMessageRequest {
             forwarded: None,
             disappearing_seconds: None,
             reply_to_message_id: None,
+            reply_to_story_id: None,
             metadata: None,
         }
     }
@@ -2153,6 +2214,22 @@ impl VoteRequest {
     pub fn new(options: Vec<String>) -> Self {
         Self {
             options,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ForwardMessageRequest {
+    /// The chats to forward to, each named once: contact ids (E.164, bare digits or `lid:<digits>`) or group ids, of the same account as the message. At most 5, WhatsApp's limit per forward; exactly 1 when the message is `forwardedManyTimes`. Usernames, channels and `stories` are not accepted.
+    pub to: Vec<String>,
+}
+
+impl ForwardMessageRequest {
+    /// A `ForwardMessageRequest` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(to: Vec<String>) -> Self {
+        Self {
+            to,
         }
     }
 }
@@ -2391,6 +2468,192 @@ impl From<MediaStoryCreateRequest> for StoryCreateRequest {
     fn from(value: MediaStoryCreateRequest) -> Self {
         Self::Media(value)
     }
+}
+
+/// A story's file. A contact's story is never downloaded when it arrives: `downloaded` is `false` and `url` is the wuapi endpoint that downloads it on first use, then serves it from storage until the story expires. Reading the file does not mark the story as viewed.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryFile {
+    /// `downloaded: false`: `GET /v1/accounts/{accountId}/stories/{storyId}/media` on api.wuapi.dev, which needs the API key (`Authorization: Bearer`) and answers a redirect to the file. `downloaded: true`: the file itself (stored by wuapi; no API key needed, so treat the URL as a secret), until the story expires or is deleted. For a story the account posted: the URL it was posted with, or the stored file of an upload. `null` when there is nothing to fetch the file with.
+    pub url: Option<String>,
+    #[serde(rename = "mimeType")]
+    pub mime_type: Option<String>,
+    pub filename: Option<String>,
+    /// Bytes, when known: what WhatsApp declared, or the stored file's size.
+    pub size: Option<i64>,
+    /// Pixels, for images and video, as WhatsApp declared them. `null` when unknown.
+    pub width: Option<i64>,
+    /// Pixels. Set and `null` together with `width`.
+    pub height: Option<i64>,
+    /// Length of a video or voice story, in seconds. `null` when unknown.
+    #[serde(rename = "durationSeconds")]
+    pub duration_seconds: Option<i64>,
+    /// `true` for a video story that WhatsApp plays as a GIF: it loops, muted, with no controls (the story's `type` is `video`). `false` for everything else.
+    #[serde(rename = "gifPlayback")]
+    pub gif_playback: bool,
+    /// `true`: `url` is the file. `false`: the file is still on WhatsApp; `url` fetches it on first use.
+    pub downloaded: bool,
+}
+
+/// A WhatsApp Status post: one a contact of the account posted (`own: false`), or one the account posted (`own: true`, whose `id` is also the id of its message). A story lasts 24 hours from `postedAt`.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Story {
+    /// Always `story`.
+    pub object: String,
+    pub id: String,
+    /// Project the resource belongs to, `null` when it is in no project. Set at creation and never changes.
+    #[serde(rename = "projectId")]
+    pub project_id: Option<String>,
+    /// The account this belongs to.
+    #[serde(rename = "accountId")]
+    pub account_id: String,
+    /// Who posted it: the contact's id (E.164, or `lid:<digits>` when WhatsApp hides their number), or the account's own number when `own`. `null` only for an account whose number is not known yet.
+    #[serde(rename = "contactId")]
+    pub contact_id: Option<String>,
+    /// `true`: the account posted it (through the API or from its phone). `false`: a contact did.
+    pub own: bool,
+    /// The author's WhatsApp display name. `null` on the account's own stories.
+    #[serde(rename = "profileName")]
+    pub profile_name: Option<String>,
+    /// The author's WhatsApp username (lowercase, without the `@`), when WhatsApp shared it.
+    pub username: Option<String>,
+    /// `text`, `image`, `video`, or `voice` / `audio` for a voice story. Anything else WhatsApp may add arrives as its message type, or `unknown`.
+    pub r#type: MessageType,
+    /// The text of a text story, or the caption of an image or video.
+    pub text: Option<String>,
+    /// A text story's background, `#RRGGBB`. `null` on other types, and when WhatsApp sent none.
+    #[serde(rename = "backgroundColor")]
+    pub background_color: Option<String>,
+    /// A text story's font, WhatsApp's font number (0, 1, 2, 6, 7, 8, 9 or 10). `null` on other types, and when WhatsApp sent none.
+    pub font: Option<i64>,
+    pub media: Option<StoryFile>,
+    /// `received` for a contact's story. For a story the account posted, its message's status: `queued`, `sent`, `delivered` (it reached someone), `read` (someone saw it) or `failed`.
+    pub status: MessageStatus,
+    /// When the account saw this contact's story: when `POST .../stories/{storyId}/view` was called, or when the account opened it on its phone or another device. `null`: not seen. Always `null` on the account's own stories.
+    #[serde(rename = "viewedAt")]
+    pub viewed_at: Option<String>,
+    /// Set by `POST .../stories/{storyId}/view`: `true` when WhatsApp told the author the account saw the story, `false` when it did not because the account's `readReceipts` privacy is `none`. `null` when the story was not viewed through the API.
+    #[serde(rename = "authorNotified")]
+    pub author_notified: Option<bool>,
+    /// The account's reaction to this contact's story (an emoji), `null` when it has none.
+    pub reaction: Option<String>,
+    /// How many contacts saw this story of the account, as far as WhatsApp reported (read receipts). `null` on a contact's story.
+    #[serde(rename = "viewCount")]
+    pub view_count: Option<i64>,
+    /// WhatsApp's own time of the post. `null` on a story of the account that is still `queued` (or `failed`).
+    #[serde(rename = "postedAt")]
+    pub posted_at: Option<String>,
+    /// 24 hours after `postedAt`: a contact's story is deleted then, and a posted one leaves `GET .../stories/own`. `null` while `postedAt` is.
+    #[serde(rename = "expiresAt")]
+    pub expires_at: Option<String>,
+    /// Set when its author deleted it: in `story.deleted` (a contact's story, whose content is cleared and which no longer exists afterwards), and on a deleted story of the account.
+    #[serde(rename = "deletedAt")]
+    pub deleted_at: Option<String>,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+}
+
+/// A page of `Story` objects.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryList {
+    /// Always `list`.
+    pub object: String,
+    pub items: Vec<Story>,
+    /// Pass as `cursor` to get the next page. `null` on the last page.
+    #[serde(rename = "nextCursor")]
+    pub next_cursor: Option<String>,
+}
+
+/// One contact's stories of the last 24 hours, oldest first (the order they play in).
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryGroup {
+    /// Always `story_group`.
+    pub object: String,
+    /// The account this belongs to.
+    #[serde(rename = "accountId")]
+    pub account_id: String,
+    /// The author: a contact id (E.164, or `lid:<digits>` when WhatsApp hides their number).
+    #[serde(rename = "contactId")]
+    pub contact_id: String,
+    /// The author's WhatsApp display name, as their latest story carried it.
+    #[serde(rename = "profileName")]
+    pub profile_name: Option<String>,
+    /// The author's WhatsApp username, when WhatsApp shared it.
+    pub username: Option<String>,
+    /// The account muted this contact's stories on WhatsApp (on its phone). Read only: muting and unmuting through the API is not supported.
+    pub muted: bool,
+    /// How many stories the group holds.
+    #[serde(rename = "storyCount")]
+    pub story_count: i64,
+    /// How many of them the account has not seen.
+    #[serde(rename = "unviewedCount")]
+    pub unviewed_count: i64,
+    /// When the newest one was posted. The list is ordered by it, newest first.
+    #[serde(rename = "lastPostedAt")]
+    pub last_posted_at: String,
+    /// At most 100.
+    pub stories: Vec<Story>,
+}
+
+/// A page of `StoryGroup` objects.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryGroupList {
+    /// Always `list`.
+    pub object: String,
+    pub items: Vec<StoryGroup>,
+    /// Pass as `cursor` to get the next page. `null` on the last page.
+    #[serde(rename = "nextCursor")]
+    pub next_cursor: Option<String>,
+}
+
+/// A contact who saw a story the account posted.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryViewer {
+    /// Always `story_viewer`.
+    pub object: String,
+    /// The account this belongs to.
+    #[serde(rename = "accountId")]
+    pub account_id: String,
+    /// The story (its id is also its message id).
+    #[serde(rename = "storyId")]
+    pub story_id: String,
+    /// The viewer: E.164, or `lid:<digits>` when WhatsApp only gave their hidden id.
+    #[serde(rename = "contactId")]
+    pub contact_id: String,
+    /// When they saw it (WhatsApp's time of the receipt).
+    #[serde(rename = "viewedAt")]
+    pub viewed_at: String,
+    /// Their reaction to the story (an emoji), `null` when they sent none or removed it.
+    pub reaction: Option<String>,
+    /// When they reacted.
+    #[serde(rename = "reactedAt")]
+    pub reacted_at: Option<String>,
+}
+
+/// A page of `StoryViewer` objects.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryViewerList {
+    /// Always `list`.
+    pub object: String,
+    pub items: Vec<StoryViewer>,
+    /// Pass as `cursor` to get the next page. `null` on the last page.
+    #[serde(rename = "nextCursor")]
+    pub next_cursor: Option<String>,
+}
+
+/// A story's stored file, from `GET /v1/accounts/{accountId}/stories/{storyId}/media` asked for JSON.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryMediaFile {
+    /// Always `media`.
+    pub object: String,
+    #[serde(rename = "storyId")]
+    pub story_id: String,
+    /// The file. No API key needed.
+    pub url: String,
+    #[serde(rename = "mimeType")]
+    pub mime_type: Option<String>,
+    pub filename: Option<String>,
+    /// Bytes, when known.
+    pub size: Option<i64>,
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -3023,6 +3286,131 @@ pub struct StickerPackStickersItem {
     pub emojis: Vec<String>,
 }
 
+/// One of the account's favorite stickers: the star tab of WhatsApp's sticker picker. WhatsApp keeps the list in sync between the phone and its linked devices; wuapi stores it as the phone sends it.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct FavoriteSticker {
+    /// Always `favorite_sticker`.
+    pub object: String,
+    /// The favorite's id in wuapi. It stays the same while the sticker is a favorite.
+    pub id: String,
+    /// The account this belongs to.
+    #[serde(rename = "accountId")]
+    pub account_id: String,
+    /// `image/webp`, or `application/was` for a Lottie sticker.
+    #[serde(rename = "mimeType")]
+    pub mime_type: String,
+    /// Whether the sticker moves. WhatsApp's list does not say it for a WebP: `null` until wuapi has the file (after the first request for `media.url`), then what the file says. Always `true` for a Lottie sticker.
+    pub animated: Option<bool>,
+    /// A Lottie (vector animation) sticker. Its file is not an image: a client needs a Lottie player to draw it.
+    pub lottie: bool,
+    /// Pixels. `null` when WhatsApp did not say and wuapi has not fetched the file.
+    pub width: Option<i64>,
+    /// Pixels. Set and `null` together with `width`.
+    pub height: Option<i64>,
+    /// Bytes: what WhatsApp declared, then the stored file's size.
+    pub size: Option<i64>,
+    /// The emojis the sticker's maker tagged it with, read from the file. `null` until wuapi has the file, and when the file carries none.
+    pub emojis: Option<Vec<String>>,
+    /// When it was favorited. The list is ordered by it, newest first, as WhatsApp shows it.
+    #[serde(rename = "favoritedAt")]
+    pub favorited_at: String,
+    /// The sticker's file, like a message's on-demand media. The file is on WhatsApp until someone asks for it.
+    pub media: FavoriteStickerMedia,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct FavoriteStickerMedia {
+    /// `downloaded: true`: the file itself, stored by wuapi; the URL does not expire and needs no API key, so treat it as a secret. It stops working when the sticker is no longer a favorite. `downloaded: false`: `GET /v1/accounts/{accountId}/stickers/favorites/{stickerId}/media` on api.wuapi.dev, which needs the API key (`Authorization: Bearer`), fetches the file from WhatsApp once and answers a redirect to it. `null` when WhatsApp no longer has the file (the endpoint answered `410 media_expired`).
+    pub url: Option<String>,
+    /// `true`: `url` is the file. `false`: the file is still on WhatsApp; `url` fetches it on first use.
+    pub downloaded: bool,
+}
+
+/// A page of `FavoriteSticker` objects.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct FavoriteStickerList {
+    /// Always `list`.
+    pub object: String,
+    pub items: Vec<FavoriteSticker>,
+    /// Pass as `cursor` to get the next page. `null` on the last page.
+    #[serde(rename = "nextCursor")]
+    pub next_cursor: Option<String>,
+}
+
+/// A favorite sticker's stored file, from `GET /v1/accounts/{accountId}/stickers/favorites/{stickerId}/media` asked for JSON.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct FavoriteStickerMediaFile {
+    /// Always `media`.
+    pub object: String,
+    #[serde(rename = "stickerId")]
+    pub sticker_id: String,
+    /// The file. No API key needed.
+    pub url: String,
+    #[serde(rename = "mimeType")]
+    pub mime_type: Option<String>,
+    /// Bytes, when known.
+    pub size: Option<i64>,
+}
+
+/// The sticker to favorite: exactly one of `messageId` (a sticker message of this account) or `uploadId` (a WebP file uploaded with `POST /v1/uploads`).
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
+#[non_exhaustive]
+pub enum FavoriteStickerAddRequest {
+    FavoriteStickerFromMessage(FavoriteStickerFromMessage),
+    FavoriteStickerFromUpload(FavoriteStickerFromUpload),
+    /// A shape this version of the SDK does not know.
+    Unknown(serde_json::Value),
+}
+
+impl From<FavoriteStickerFromMessage> for FavoriteStickerAddRequest {
+    fn from(value: FavoriteStickerFromMessage) -> Self {
+        Self::FavoriteStickerFromMessage(value)
+    }
+}
+
+impl From<FavoriteStickerFromUpload> for FavoriteStickerAddRequest {
+    fn from(value: FavoriteStickerFromUpload) -> Self {
+        Self::FavoriteStickerFromUpload(value)
+    }
+}
+
+/// Favorite the sticker of a message the account sent or received.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct FavoriteStickerFromMessage {
+    /// A message of this account with `type: sticker`. Its file must still be reachable: on WhatsApp (a received sticker not fetched yet), stored by wuapi, or at the URL it was sent from.
+    #[serde(rename = "messageId")]
+    pub message_id: String,
+}
+
+impl FavoriteStickerFromMessage {
+    /// A `FavoriteStickerFromMessage` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(message_id: impl Into<String>) -> Self {
+        Self {
+            message_id: message_id.into(),
+        }
+    }
+}
+
+/// Favorite a sticker file of your own.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct FavoriteStickerFromUpload {
+    /// The id of a `ready` upload (`POST /v1/uploads`) with `mimeType: image/webp`, at most 2 MB. WhatsApp shows a sticker best at 512x512 pixels. The upload is not used up: it can still be sent.
+    #[serde(rename = "uploadId")]
+    pub upload_id: String,
+}
+
+impl FavoriteStickerFromUpload {
+    /// A `FavoriteStickerFromUpload` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(upload_id: impl Into<String>) -> Self {
+        Self {
+            upload_id: upload_id.into(),
+        }
+    }
+}
+
 /// A catalog order.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Order {
@@ -3481,6 +3869,14 @@ string_enum! {
         MessageDeleted = "message.deleted",
         /// `message.media_downloaded`
         MessageMediaDownloaded = "message.media_downloaded",
+        /// `story.received`
+        StoryReceived = "story.received",
+        /// `story.deleted`
+        StoryDeleted = "story.deleted",
+        /// `story.viewed`
+        StoryViewed = "story.viewed",
+        /// `story.reacted`
+        StoryReacted = "story.reacted",
         /// `poll.voted`
         PollVoted = "poll.voted",
         /// `group.joined`
@@ -3503,6 +3899,8 @@ string_enum! {
         ContactUpdated = "contact.updated",
         /// `blocklist.updated`
         BlocklistUpdated = "blocklist.updated",
+        /// `sticker.favorites_updated`
+        StickerFavoritesUpdated = "sticker.favorites_updated",
         /// `label.updated`
         LabelUpdated = "label.updated",
         /// `call.received`
@@ -4290,6 +4688,39 @@ string_enum! {
     }
 }
 
+/// The account's favorite stickers changed.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StickerFavoritesChange {
+    /// Always `sticker_favorites_change`.
+    pub object: String,
+    /// The account this belongs to.
+    #[serde(rename = "accountId")]
+    pub account_id: String,
+    /// `added`: one sticker was favorited (on the phone, on another device or through the API), or favorited again, which moves it to the top. `removed`: one stopped being a favorite. `synced`: wuapi read the whole list from WhatsApp (after linking, or when WhatsApp resynced it) and it differs from what wuapi held: read `GET .../stickers/favorites`.
+    pub reason: StickerFavoritesChangeReason,
+    /// The favorite that was added or removed. `null` for `synced`.
+    #[serde(rename = "stickerId")]
+    pub sticker_id: Option<String>,
+    /// The favorite, for `added`. `null` otherwise.
+    pub sticker: Option<FavoriteSticker>,
+    /// How many stickers became favorites: 1 for `added`, the count for `synced`.
+    pub added: i64,
+    /// How many stopped being favorites: 1 for `removed`, the count for `synced`.
+    pub removed: i64,
+}
+
+string_enum! {
+    pub enum StickerFavoritesChangeReason {
+        /// `added`
+        Added = "added",
+        /// `removed`
+        Removed = "removed",
+        /// `synced`
+        Synced = "synced",
+        @unknown Unknown,
+    }
+}
+
 /// A label was edited or (un)assigned.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LabelChange {
@@ -4515,6 +4946,70 @@ pub struct MessageEditedEventData {
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct MessageEditedEventDataPreviousAttributes {
     pub text: Option<String>,
+}
+
+/// `story.received`: a contact posted a story (an account receives them only once stories are on for it). Its file is on demand: `media.downloaded` is `false`. `story.deleted`: its author deleted it before it expired; `deletedAt` is set, the content is cleared and the story no longer exists. A story that simply expires fires nothing. Neither fires for the stories the account posts (those are messages: `message.sent`, `message.deleted`).
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryEvent {
+    /// Event id (`evt_...`). Deduplicate on it.
+    pub id: String,
+    pub object: String,
+    pub r#type: StoryEventType,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+    #[serde(rename = "organizationId")]
+    pub organization_id: String,
+    /// The project the event belongs to, `null` when unassigned.
+    #[serde(rename = "projectId")]
+    pub project_id: Option<String>,
+    pub data: StoryEventData,
+}
+
+string_enum! {
+    pub enum StoryEventType {
+        /// `story.received`
+        StoryReceived = "story.received",
+        /// `story.deleted`
+        StoryDeleted = "story.deleted",
+        @unknown Unknown,
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryEventData {
+    pub object: Story,
+}
+
+/// `story.viewed`: a contact saw a story the account posted, once per contact and story. `story.reacted`: a contact reacted to one, or changed or removed their reaction (`reaction` is then `null`).
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryViewerEvent {
+    /// Event id (`evt_...`). Deduplicate on it.
+    pub id: String,
+    pub object: String,
+    pub r#type: StoryViewerEventType,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+    #[serde(rename = "organizationId")]
+    pub organization_id: String,
+    /// The project the event belongs to, `null` when unassigned.
+    #[serde(rename = "projectId")]
+    pub project_id: Option<String>,
+    pub data: StoryViewerEventData,
+}
+
+string_enum! {
+    pub enum StoryViewerEventType {
+        /// `story.viewed`
+        StoryViewed = "story.viewed",
+        /// `story.reacted`
+        StoryReacted = "story.reacted",
+        @unknown Unknown,
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StoryViewerEventData {
+    pub object: StoryViewer,
 }
 
 /// Someone voted in a poll.
@@ -4747,6 +5242,28 @@ pub struct BlocklistUpdatedEventData {
     pub object: BlocklistChange,
 }
 
+/// The account's favorite stickers changed.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StickerFavoritesUpdatedEvent {
+    /// Event id (`evt_...`). Deduplicate on it.
+    pub id: String,
+    pub object: String,
+    pub r#type: String,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+    #[serde(rename = "organizationId")]
+    pub organization_id: String,
+    /// The project the event belongs to, `null` when unassigned.
+    #[serde(rename = "projectId")]
+    pub project_id: Option<String>,
+    pub data: StickerFavoritesUpdatedEventData,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct StickerFavoritesUpdatedEventData {
+    pub object: StickerFavoritesChange,
+}
+
 /// A label was edited or (un)assigned to a chat or message. The full sync replays labels this way, which is how the label list arrives.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LabelUpdatedEvent {
@@ -4972,6 +5489,10 @@ pub enum Event {
     Message(MessageEvent),
     /// type: `message.edited`
     MessageEdited(MessageEditedEvent),
+    /// type: `story.received`, `story.deleted`
+    Story(StoryEvent),
+    /// type: `story.viewed`, `story.reacted`
+    StoryViewer(StoryViewerEvent),
     /// type: `poll.voted`
     PollVoted(PollVotedEvent),
     /// type: `group.joined`
@@ -4992,6 +5513,8 @@ pub enum Event {
     ContactUpdated(ContactUpdatedEvent),
     /// type: `blocklist.updated`
     BlocklistUpdated(BlocklistUpdatedEvent),
+    /// type: `sticker.favorites_updated`
+    StickerFavoritesUpdated(StickerFavoritesUpdatedEvent),
     /// type: `label.updated`
     LabelUpdated(LabelUpdatedEvent),
     /// type: `call.received`, `call.ended`
@@ -5018,6 +5541,8 @@ impl serde::Serialize for Event {
             Self::Account(value) => value.serialize(serializer),
             Self::Message(value) => value.serialize(serializer),
             Self::MessageEdited(value) => value.serialize(serializer),
+            Self::Story(value) => value.serialize(serializer),
+            Self::StoryViewer(value) => value.serialize(serializer),
             Self::PollVoted(value) => value.serialize(serializer),
             Self::GroupJoined(value) => value.serialize(serializer),
             Self::GroupUpdated(value) => value.serialize(serializer),
@@ -5028,6 +5553,7 @@ impl serde::Serialize for Event {
             Self::ContactPictureUpdated(value) => value.serialize(serializer),
             Self::ContactUpdated(value) => value.serialize(serializer),
             Self::BlocklistUpdated(value) => value.serialize(serializer),
+            Self::StickerFavoritesUpdated(value) => value.serialize(serializer),
             Self::LabelUpdated(value) => value.serialize(serializer),
             Self::Call(value) => value.serialize(serializer),
             Self::ChannelMessage(value) => value.serialize(serializer),
@@ -5065,6 +5591,12 @@ impl<'de> serde::Deserialize<'de> for Event {
             Some("message.edited") => {
                 crate::serde_helpers::from_value(value).map(Self::MessageEdited)
             }
+            Some("story.received" | "story.deleted") => {
+                crate::serde_helpers::from_value(value).map(Self::Story)
+            }
+            Some("story.viewed" | "story.reacted") => {
+                crate::serde_helpers::from_value(value).map(Self::StoryViewer)
+            }
             Some("poll.voted") => crate::serde_helpers::from_value(value).map(Self::PollVoted),
             Some("group.joined") => crate::serde_helpers::from_value(value).map(Self::GroupJoined),
             Some("group.updated") => {
@@ -5088,6 +5620,9 @@ impl<'de> serde::Deserialize<'de> for Event {
             }
             Some("blocklist.updated") => {
                 crate::serde_helpers::from_value(value).map(Self::BlocklistUpdated)
+            }
+            Some("sticker.favorites_updated") => {
+                crate::serde_helpers::from_value(value).map(Self::StickerFavoritesUpdated)
             }
             Some("label.updated") => {
                 crate::serde_helpers::from_value(value).map(Self::LabelUpdated)
@@ -5131,6 +5666,18 @@ impl From<MessageEvent> for Event {
 impl From<MessageEditedEvent> for Event {
     fn from(value: MessageEditedEvent) -> Self {
         Self::MessageEdited(value)
+    }
+}
+
+impl From<StoryEvent> for Event {
+    fn from(value: StoryEvent) -> Self {
+        Self::Story(value)
+    }
+}
+
+impl From<StoryViewerEvent> for Event {
+    fn from(value: StoryViewerEvent) -> Self {
+        Self::StoryViewer(value)
     }
 }
 
@@ -5191,6 +5738,12 @@ impl From<ContactUpdatedEvent> for Event {
 impl From<BlocklistUpdatedEvent> for Event {
     fn from(value: BlocklistUpdatedEvent) -> Self {
         Self::BlocklistUpdated(value)
+    }
+}
+
+impl From<StickerFavoritesUpdatedEvent> for Event {
+    fn from(value: StickerFavoritesUpdatedEvent) -> Self {
+        Self::StickerFavoritesUpdated(value)
     }
 }
 
@@ -5491,11 +6044,72 @@ pub type MessagesReactParams = ReactRequest;
 /// Params for `messages.vote`.
 pub type MessagesVoteParams = VoteRequest;
 
+/// Params for `messages.forward`.
+pub type MessagesForwardParams = ForwardMessageRequest;
+
 /// Params for `messages.add_label`.
 pub type MessagesAddLabelParams = LabelAssignRequest;
 
 /// Params for `stories.create`.
 pub type StoriesCreateParams = StoryCreateRequest;
+
+/// Params for `stories.list`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, Default)]
+pub struct StoriesListParams {
+    /// Only this contact's stories: an E.164 number, bare digits or `lid:<digits>` (the `contactId` of a group). At most one group comes back.
+    #[serde(rename = "contactId", default)]
+    pub contact_id: Option<String>,
+    /// `true`: only the contacts with a story the account has not seen. A page may then hold fewer groups than `limit` while `nextCursor` is set: keep following the cursor.
+    #[serde(default)]
+    pub unviewed: Option<bool>,
+    /// Page size, 1 to 100.
+    ///
+    /// Default: `50`.
+    #[serde(default)]
+    pub limit: Option<i64>,
+    /// Opaque cursor from a previous page's `nextCursor`. An invalid or expired cursor answers `400 invalid_request`.
+    #[serde(default)]
+    pub cursor: Option<String>,
+}
+
+/// Params for `stories.list_own`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, Default)]
+pub struct StoriesListOwnParams {
+    /// Page size, 1 to 100.
+    ///
+    /// Default: `50`.
+    #[serde(default)]
+    pub limit: Option<i64>,
+    /// Opaque cursor from a previous page's `nextCursor`. An invalid or expired cursor answers `400 invalid_request`.
+    #[serde(default)]
+    pub cursor: Option<String>,
+}
+
+/// Params for `stories.get_media`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, Default)]
+pub struct StoriesGetMediaParams {
+    /// `false` answers JSON with the file's URL instead of the `302` redirect.
+    ///
+    /// Default: `true`.
+    #[serde(default)]
+    pub redirect: Option<bool>,
+}
+
+/// Params for `stories.list_viewers`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, Default)]
+pub struct StoriesListViewersParams {
+    /// Page size, 1 to 100.
+    ///
+    /// Default: `50`.
+    #[serde(default)]
+    pub limit: Option<i64>,
+    /// Opaque cursor from a previous page's `nextCursor`. An invalid or expired cursor answers `400 invalid_request`.
+    #[serde(default)]
+    pub cursor: Option<String>,
+}
+
+/// Params for `stories.react`.
+pub type StoriesReactParams = ReactRequest;
 
 /// Params for `uploads.create`.
 pub type UploadsCreateParams = UploadCreateRequest;
@@ -5632,6 +6246,32 @@ pub type PrivacyUpdateParams = PrivacyUpdateRequest;
 
 /// Params for `calls.reject`.
 pub type CallsRejectParams = CallRejectRequest;
+
+/// Params for `favorite_stickers.list`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, Default)]
+pub struct FavoriteStickersListParams {
+    /// Page size, 1 to 100.
+    ///
+    /// Default: `50`.
+    #[serde(default)]
+    pub limit: Option<i64>,
+    /// Opaque cursor from a previous page's `nextCursor`. An invalid or expired cursor answers `400 invalid_request`.
+    #[serde(default)]
+    pub cursor: Option<String>,
+}
+
+/// Params for `favorite_stickers.add`.
+pub type FavoriteStickersAddParams = FavoriteStickerAddRequest;
+
+/// Params for `favorite_stickers.get_media`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, Default)]
+pub struct FavoriteStickersGetMediaParams {
+    /// `false` answers JSON with the file's URL instead of the `302` redirect.
+    ///
+    /// Default: `true`.
+    #[serde(default)]
+    pub redirect: Option<bool>,
+}
 
 /// Params for `orders.get`.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize)]
@@ -5910,6 +6550,42 @@ impl crate::pagination::CursorPage for MessageList {
     }
 }
 
+impl crate::pagination::CursorPage for StoryGroupList {
+    type Item = StoryGroup;
+
+    fn next_cursor(&self) -> Option<&str> {
+        self.next_cursor.as_deref()
+    }
+
+    fn into_items(self) -> Vec<Self::Item> {
+        self.items
+    }
+}
+
+impl crate::pagination::CursorPage for StoryList {
+    type Item = Story;
+
+    fn next_cursor(&self) -> Option<&str> {
+        self.next_cursor.as_deref()
+    }
+
+    fn into_items(self) -> Vec<Self::Item> {
+        self.items
+    }
+}
+
+impl crate::pagination::CursorPage for StoryViewerList {
+    type Item = StoryViewer;
+
+    fn next_cursor(&self) -> Option<&str> {
+        self.next_cursor.as_deref()
+    }
+
+    fn into_items(self) -> Vec<Self::Item> {
+        self.items
+    }
+}
+
 impl crate::pagination::CursorPage for ChatList {
     type Item = Chat;
 
@@ -5948,6 +6624,18 @@ impl crate::pagination::CursorPage for BlockedContactList {
 
 impl crate::pagination::CursorPage for BotList {
     type Item = Bot;
+
+    fn next_cursor(&self) -> Option<&str> {
+        self.next_cursor.as_deref()
+    }
+
+    fn into_items(self) -> Vec<Self::Item> {
+        self.items
+    }
+}
+
+impl crate::pagination::CursorPage for FavoriteStickerList {
+    type Item = FavoriteSticker;
 
     fn next_cursor(&self) -> Option<&str> {
         self.next_cursor.as_deref()

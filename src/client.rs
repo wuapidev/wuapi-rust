@@ -10,6 +10,7 @@ use crate::resources::calls::CallsResource;
 use crate::resources::channels::ChannelsResource;
 use crate::resources::chats::ChatsResource;
 use crate::resources::contacts::ContactsResource;
+use crate::resources::favorite_stickers::FavoriteStickersResource;
 use crate::resources::groups::GroupsResource;
 use crate::resources::invitations::InvitationsResource;
 use crate::resources::labels::LabelsResource;
@@ -111,7 +112,7 @@ impl Wuapi {
         MessagesResource::new(self.http.clone())
     }
 
-    /// WhatsApp Status posts. A story is stored as a message whose `chatId` is `stories`.
+    /// WhatsApp Status posts.
     #[must_use]
     pub fn stories(&self) -> StoriesResource {
         StoriesResource::new(self.http.clone())
@@ -169,6 +170,12 @@ impl Wuapi {
     #[must_use]
     pub fn sticker_packs(&self) -> StickerPacksResource {
         StickerPacksResource::new(self.http.clone())
+    }
+
+    /// The account's favorite stickers: the star tab of WhatsApp's sticker picker, which WhatsApp keeps in sync between the phone and its linked devices.
+    #[must_use]
+    pub fn favorite_stickers(&self) -> FavoriteStickersResource {
+        FavoriteStickersResource::new(self.http.clone())
     }
 
     /// Catalog orders contacts send as messages, read live from WhatsApp.
