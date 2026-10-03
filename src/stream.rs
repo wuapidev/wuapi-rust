@@ -54,7 +54,7 @@ pub struct StreamTiming {
     pub retry_max: Duration,
     /// Clamp on a server-sent `Retry-After`.
     pub retry_after_max: Duration,
-    /// How far back a cursor can resume.
+    /// How long wuapi keeps events: a cursor older than this never resumes. A resume is guaranteed only within 28 minutes of it.
     pub replay_window: Duration,
 }
 
