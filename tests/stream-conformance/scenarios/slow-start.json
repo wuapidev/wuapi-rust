@@ -1,0 +1,86 @@
+{
+  "name": "slow-start",
+  "summary": "Headers may take a while; a connect that gets none within open_timeout is a failure like any other.",
+  "contract": [
+    "1.9",
+    "2"
+  ],
+  "connections": [
+    {
+      "at_ms": 0,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/live.sse"
+          }
+        ],
+        "end": "close",
+        "after_ms": 5000
+      }
+    },
+    {
+      "at_ms": 8000,
+      "response": {
+        "hang": true
+      }
+    },
+    {
+      "at_ms": 23000,
+      "response": {
+        "unreachable": true,
+        "after_ms": 2000
+      }
+    },
+    {
+      "at_ms": 28000,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open",
+      "at_ms": 5000
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_live1",
+      "cursor": "c1.mubbs8a0"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 3000,
+      "failures": 1
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3000,
+      "failures": 2,
+      "at_ms": 20000
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3000,
+      "failures": 3,
+      "at_ms": 25000
+    },
+    {
+      "type": "open",
+      "at_ms": 28000
+    }
+  ]
+}

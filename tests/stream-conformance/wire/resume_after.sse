@@ -1,0 +1,14 @@
+retry: 3000
+
+id: c1.mubbs91s
+event: message.received
+data: {"id":"evt_res2","object":"event","type":"message.received","createdAt":"2026-09-21T06:13:22.000Z","organizationId":"org_acme","projectId":null,"data":{"object":{"object":"message","id":"m_res_2","accountId":"acc_1","chatId":"chat_1","direction":"inbound","from":"15551230001","text":"message 2"}}}
+
+id: c1.mubbs9tk
+event: message.received
+data: {"id":"evt_res3","object":"event","type":"message.received","createdAt":"2026-09-21T06:13:23.000Z","organizationId":"org_acme","projectId":null,"data":{"object":{"object":"message","id":"m_res_3","accountId":"acc_1","chatId":"chat_1","direction":"inbound","from":"15551230001","text":"message 3"}}}
+
+id: c1.mubbsalc
+event: message.received
+data: {"id":"evt_res4","object":"event","type":"message.received","createdAt":"2026-09-21T06:13:24.000Z","organizationId":"org_acme","projectId":null,"data":{"object":{"object":"message","id":"m_res_4","accountId":"acc_1","chatId":"chat_1","direction":"inbound","from":"15551230001","text":"message 4"}}}
+

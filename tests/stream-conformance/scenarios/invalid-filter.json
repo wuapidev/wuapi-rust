@@ -1,0 +1,40 @@
+{
+  "name": "invalid-filter",
+  "summary": "The client sends the filter as given, and the server's 400 is a terminal error.",
+  "contract": [
+    "1.6",
+    "2",
+    "6"
+  ],
+  "params": {
+    "types": [
+      "chat.presence_updated"
+    ]
+  },
+  "connections": [
+    {
+      "request": {
+        "query": {
+          "types": "chat.presence_updated"
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "file": "wire/errors/400.json"
+        }
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "error",
+      "kind": "invalid_request",
+      "status": 400,
+      "code": "invalid_request"
+    }
+  ]
+}

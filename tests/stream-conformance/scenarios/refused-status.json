@@ -1,0 +1,29 @@
+{
+  "name": "refused-status",
+  "summary": "A status the description does not name and that is not 408, 429 or 5xx is a terminal error.",
+  "contract": [
+    "2",
+    "6"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 418,
+        "headers": {
+          "content-type": "text/plain"
+        },
+        "body": {
+          "text": "I'm a teapot"
+        }
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "error",
+      "kind": "refused",
+      "status": 418,
+      "code": null
+    }
+  ]
+}

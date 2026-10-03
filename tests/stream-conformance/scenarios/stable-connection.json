@@ -1,0 +1,112 @@
+{
+  "name": "stable-connection",
+  "summary": "A connection that stayed open for stable_after resets the failure count; one that did not adds to it.",
+  "contract": [
+    "5.1",
+    "5.2",
+    "5.4",
+    "5.5"
+  ],
+  "random": [
+    1
+  ],
+  "connections": [
+    {
+      "at_ms": 0,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 4000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 9000,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "text": "retry: 3000\n\n"
+          },
+          {
+            "wait_ms": 20000
+          },
+          {
+            "text": ": ping\n\n"
+          },
+          {
+            "wait_ms": 20000
+          }
+        ],
+        "end": "close"
+      }
+    },
+    {
+      "at_ms": 53000,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "close"
+      }
+    },
+    {
+      "at_ms": 57000,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 4000,
+      "failures": 1
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 5000,
+      "failures": 2
+    },
+    {
+      "type": "open",
+      "at_ms": 9000
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 4000,
+      "failures": 0,
+      "at_ms": 49000
+    },
+    {
+      "type": "open",
+      "at_ms": 53000
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 4000,
+      "failures": 1
+    },
+    {
+      "type": "open",
+      "at_ms": 57000
+    }
+  ]
+}

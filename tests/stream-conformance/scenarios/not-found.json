@@ -1,0 +1,38 @@
+{
+  "name": "not-found",
+  "summary": "A client scoped to a project sends the project header, and a 404 is a terminal error.",
+  "contract": [
+    "1.5",
+    "2",
+    "6"
+  ],
+  "client": {
+    "project": "proj_missing"
+  },
+  "connections": [
+    {
+      "request": {
+        "headers": {
+          "{project_header}": "proj_missing"
+        }
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "file": "wire/errors/404.json"
+        }
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "error",
+      "kind": "not_found",
+      "status": 404,
+      "code": "project_not_found"
+    }
+  ]
+}

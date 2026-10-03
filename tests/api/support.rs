@@ -25,6 +25,7 @@ pub struct Reply {
     status: u16,
     body: Option<Value>,
     text: Option<String>,
+    raw: Option<(Vec<u8>, String)>,
     headers: Vec<(String, String)>,
     delay: Option<Duration>,
 }
@@ -36,6 +37,7 @@ impl Reply {
             status,
             body: None,
             text: None,
+            raw: None,
             headers: Vec::new(),
             delay: None,
         }
@@ -53,6 +55,14 @@ impl Reply {
     pub fn text(status: u16, text: &str) -> Self {
         Self {
             text: Some(text.to_owned()),
+            ..Self::status(status)
+        }
+    }
+
+    /// A reply with these bytes and this content type.
+    pub fn raw(status: u16, body: impl Into<Vec<u8>>, content_type: &str) -> Self {
+        Self {
+            raw: Some((body.into(), content_type.to_owned())),
             ..Self::status(status)
         }
     }
@@ -76,6 +86,9 @@ impl Reply {
         }
         if let Some(text) = &self.text {
             template = template.set_body_string(text.clone());
+        }
+        if let Some((bytes, content_type)) = &self.raw {
+            template = template.set_body_raw(bytes.clone(), content_type);
         }
         for (name, value) in &self.headers {
             template = template.insert_header(name.as_str(), value.as_str());

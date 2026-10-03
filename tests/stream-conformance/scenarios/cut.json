@@ -1,0 +1,66 @@
+{
+  "name": "cut",
+  "summary": "A connection that breaks while it is read is retried with the cursor.",
+  "contract": [
+    "4",
+    "5"
+  ],
+  "connections": [
+    {
+      "request": {
+        "headers": {
+          "last-event-id": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/live.sse"
+          }
+        ],
+        "end": "error"
+      }
+    },
+    {
+      "at_ms": 3000,
+      "request": {
+        "headers": {
+          "last-event-id": "c1.mubbs8a0"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_live1",
+      "cursor": "c1.mubbs8a0"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "cut",
+      "delay_ms": 3000,
+      "failures": 1
+    },
+    {
+      "type": "open",
+      "at_ms": 3000
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 [package]
 name = "wuapi"
-version = "0.12.0"
+version = "0.13.0"
 edition = "2024"
 rust-version = "1.85"
 description = "Rust SDK for wuapi, a WhatsApp API for developers. Link numbers by QR or pairing code, send and receive messages, manage chats, contacts, groups and channels, split them into projects and verify webhooks."
@@ -26,5 +26,5 @@ tokio = { version = "1", features = ["time"] }
 uuid = { version = "1", features = ["v4"] }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "test-util"] }
 wiremock = "0.6"

@@ -10,6 +10,7 @@ use crate::resources::calls::CallsResource;
 use crate::resources::channels::ChannelsResource;
 use crate::resources::chats::ChatsResource;
 use crate::resources::contacts::ContactsResource;
+use crate::resources::events::EventsResource;
 use crate::resources::favorite_stickers::FavoriteStickersResource;
 use crate::resources::groups::GroupsResource;
 use crate::resources::invitations::InvitationsResource;
@@ -224,6 +225,12 @@ impl Wuapi {
     #[must_use]
     pub fn usage(&self) -> UsageResource {
         UsageResource::new(self.http.clone())
+    }
+
+    /// Streams: your events over one connection your code opens, the same envelope a webhook carries. No public endpoint needed.
+    #[must_use]
+    pub fn events(&self) -> EventsResource {
+        EventsResource::new(self.http.clone())
     }
 
     /// Get the current key

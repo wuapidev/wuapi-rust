@@ -1,0 +1,33 @@
+{
+  "path": "/v1/events/stream",
+  "resume_header": "Last-Event-ID",
+  "reset_event": "reset",
+  "filters": ["types", "accounts"],
+  "timing": {
+    "retry": 3000,
+    "heartbeat": 15000,
+    "idle_timeout": 45000,
+    "open_timeout": 12000,
+    "backoff_base": 1000,
+    "backoff_cap": 30000,
+    "min_gap": 1000,
+    "stable_after": 30000,
+    "retry_max": 60000,
+    "retry_after_max": 300000,
+    "replay_window": 1800000
+  },
+  "limits": {
+    "connect_budget": 6,
+    "connect_budget_window": 60000,
+    "max_frame_bytes": 1048576,
+    "dedupe_window": 2048
+  },
+  "refusals": [
+    { "status": 400, "error": "invalid_request" },
+    { "status": 401, "error": "unauthorized", "api_only": true },
+    { "status": 403, "error": "forbidden" },
+    { "status": 404, "error": "not_found" },
+    { "status": 429, "code": "stream_connection_limit", "wait": 30000 },
+    { "status": 429, "wait": 60000 }
+  ]
+}

@@ -8,6 +8,8 @@ use wuapi as sdk;
 #[rustfmt::skip]
 mod generated;
 mod runtime;
+mod stream;
+mod stream_conformance;
 mod support;
 mod webhook;
 

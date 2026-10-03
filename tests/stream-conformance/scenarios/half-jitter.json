@@ -1,0 +1,53 @@
+{
+  "name": "half-jitter",
+  "summary": "The random number scales the step: 0.5 of a 2 s step is one more second.",
+  "contract": [
+    "5.5"
+  ],
+  "random": [
+    0.5
+  ],
+  "connections": [
+    {
+      "at_ms": 0,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 3500,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 7500,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3500,
+      "failures": 1
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 4000,
+      "failures": 2
+    },
+    {
+      "type": "open",
+      "at_ms": 7500
+    }
+  ]
+}

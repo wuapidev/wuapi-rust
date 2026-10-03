@@ -1,0 +1,52 @@
+{
+  "name": "unknown-event",
+  "summary": "An event of a type or with fields the SDK does not know is delivered unchanged; an envelope without an id is never a repeat.",
+  "contract": [
+    "3"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "text": "id: c1.n\nevent: galaxy.exploded\ndata: {\"id\":\"evt_new\",\"object\":\"event\",\"type\":\"galaxy.exploded\",\"somethingNew\":{\"a\":[1,2,3]},\"data\":{\"object\":{\"object\":\"galaxy\"}}}\n\n"
+          },
+          {
+            "text": "data: {\"object\":\"event\",\"type\":\"message.received\"}\n\ndata: {\"object\":\"event\",\"type\":\"message.received\"}\n\n"
+          }
+        ],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "event",
+      "event": "galaxy.exploded",
+      "id": "evt_new",
+      "cursor": "c1.n",
+      "data": "{\"id\":\"evt_new\",\"object\":\"event\",\"type\":\"galaxy.exploded\",\"somethingNew\":{\"a\":[1,2,3]},\"data\":{\"object\":{\"object\":\"galaxy\"}}}"
+    },
+    {
+      "type": "event",
+      "event": "message",
+      "id": null,
+      "cursor": "c1.n",
+      "data": "{\"object\":\"event\",\"type\":\"message.received\"}"
+    },
+    {
+      "type": "event",
+      "event": "message",
+      "id": null,
+      "cursor": "c1.n",
+      "data": "{\"object\":\"event\",\"type\":\"message.received\"}"
+    }
+  ]
+}

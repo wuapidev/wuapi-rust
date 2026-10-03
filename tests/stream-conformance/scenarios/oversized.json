@@ -1,0 +1,85 @@
+{
+  "name": "oversized",
+  "summary": "A line or a block over max_frame_bytes is dropped and reported, and its id still moves the cursor.",
+  "contract": [
+    "3.9"
+  ],
+  "options": {
+    "max_frame_bytes": 96
+  },
+  "connections": [
+    {
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "text": "id: c1.big\nevent: message.received\ndata: {\"id\":\"evt_big\",\"object\":\"event\",\"pad\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}\n\n"
+          },
+          {
+            "text": "id: c1.m\ndata: yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\ndata: yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\ndata: yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\n\n"
+          },
+          {
+            "text": "id: c1.s\ndata: {\"id\":\"evt_s\",\"object\":\"event\"}\n\n"
+          },
+          {
+            "text": "id: c1.big2\nevent: message.received\ndata: {\"id\":\"evt_big2\",\"object\":\"event\",\"pad\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}\n\n"
+          }
+        ],
+        "end": "close"
+      }
+    },
+    {
+      "request": {
+        "headers": {
+          "last-event-id": "c1.big2"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "skipped",
+      "reason": "oversized",
+      "event": null
+    },
+    {
+      "type": "skipped",
+      "reason": "oversized",
+      "event": null
+    },
+    {
+      "type": "event",
+      "event": "message",
+      "id": "evt_s",
+      "cursor": "c1.s"
+    },
+    {
+      "type": "skipped",
+      "reason": "oversized",
+      "event": null
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 3000,
+      "failures": 1
+    },
+    {
+      "type": "open"
+    }
+  ]
+}

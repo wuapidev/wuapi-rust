@@ -14,7 +14,7 @@ use std::fmt;
 use std::future::{Future, IntoFuture};
 use std::marker::PhantomData;
 use std::pin::Pin;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
@@ -82,7 +82,7 @@ impl RetryPolicy {
 }
 
 /// A random number in `[0, 1)`.
-fn random_unit() -> f64 {
+pub(crate) fn random_unit() -> f64 {
     // 53 random bits: every value is exactly representable as an f64.
     let bits = (uuid::Uuid::new_v4().as_u128() >> 75) as u64;
     bits as f64 / (1u64 << 53) as f64
@@ -102,6 +102,7 @@ pub struct ClientBuilder {
     timeout: Option<Duration>,
     retry: Option<RetryPolicy>,
     project: Option<String>,
+    stream_base_url: Option<String>,
     http_client: Option<reqwest::Client>,
 }
 
@@ -113,6 +114,7 @@ impl fmt::Debug for ClientBuilder {
             .field("timeout", &self.timeout)
             .field("retry", &self.retry)
             .field("project", &self.project)
+            .field("stream_base_url", &self.stream_base_url)
             .finish_non_exhaustive()
     }
 }
@@ -173,6 +175,15 @@ impl ClientBuilder {
         self
     }
 
+    /// Where the event stream is served, for an API that has one. Defaults
+    /// to the stream's production URL, or to the origin of the base URL when
+    /// that is not the API's production URL.
+    #[must_use]
+    pub fn stream_base_url(mut self, stream_base_url: impl Into<String>) -> Self {
+        self.stream_base_url = Some(stream_base_url.into());
+        self
+    }
+
     /// A `reqwest` client to send requests with, to bring your own proxy,
     /// TLS or connection pool settings. The per-attempt timeout and the
     /// `User-Agent` of this crate still apply.
@@ -226,6 +237,10 @@ impl ClientBuilder {
                 timeout: self.timeout.unwrap_or(DEFAULT_TIMEOUT),
                 retry: self.retry.unwrap_or_default(),
                 project,
+                stream_base_url: self
+                    .stream_base_url
+                    .map(|url| url.trim_end_matches('/').to_owned()),
+                stream_connects: Arc::default(),
                 client,
             }),
         })
@@ -250,6 +265,10 @@ struct Inner {
     timeout: Duration,
     retry: RetryPolicy,
     project: Option<String>,
+    stream_base_url: Option<String>,
+    /// When this client's stream connects started, to pace them: shared by
+    /// every stream of the client and of its project-scoped copies.
+    stream_connects: Arc<Mutex<Vec<tokio::time::Instant>>>,
     client: reqwest::Client,
 }
 
@@ -266,6 +285,7 @@ impl fmt::Debug for HttpClient {
             .field("timeout", &self.inner.timeout)
             .field("retry", &self.inner.retry)
             .field("project", &self.inner.project)
+            .field("stream_base_url", &self.inner.stream_base_url)
             .finish_non_exhaustive()
     }
 }
@@ -295,6 +315,33 @@ impl HttpClient {
         self.inner.project.as_deref()
     }
 
+    /// The stream host, when the client was given one.
+    #[must_use]
+    pub fn stream_base_url(&self) -> Option<&str> {
+        self.inner.stream_base_url.as_deref()
+    }
+
+    // The three below are for the event stream runtime, which only an API
+    // with a stream has.
+
+    /// The API key, for a request this module does not send itself.
+    #[allow(dead_code)]
+    pub(crate) fn api_key(&self) -> &str {
+        &self.inner.api_key
+    }
+
+    /// The underlying HTTP client.
+    #[allow(dead_code)]
+    pub(crate) fn reqwest(&self) -> &reqwest::Client {
+        &self.inner.client
+    }
+
+    /// When this client's stream connects started.
+    #[allow(dead_code)]
+    pub(crate) fn stream_connects(&self) -> Arc<Mutex<Vec<tokio::time::Instant>>> {
+        Arc::clone(&self.inner.stream_connects)
+    }
+
     /// A client with the same configuration, scoped to another project.
     ///
     /// # Errors
@@ -311,6 +358,8 @@ impl HttpClient {
                 timeout: self.inner.timeout,
                 retry: self.inner.retry.clone(),
                 project: Some(project),
+                stream_base_url: self.inner.stream_base_url.clone(),
+                stream_connects: Arc::clone(&self.inner.stream_connects),
                 client: self.inner.client.clone(),
             }),
         })
@@ -469,7 +518,7 @@ fn api_error(
 }
 
 /// `Retry-After`: seconds, or an HTTP date.
-fn parse_retry_after(value: &str, now: SystemTime) -> Option<Duration> {
+pub(crate) fn parse_retry_after(value: &str, now: SystemTime) -> Option<Duration> {
     let value = value.trim();
     if let Ok(seconds) = value.parse::<f64>() {
         return (seconds.is_finite() && seconds >= 0.0)
@@ -539,7 +588,7 @@ pub fn encode_path(segment: &str) -> String {
     out
 }
 
-fn build_url(base_url: &str, path: &str, query: &[(String, String)]) -> String {
+pub(crate) fn build_url(base_url: &str, path: &str, query: &[(String, String)]) -> String {
     let mut url = String::with_capacity(base_url.len() + path.len());
     url.push_str(base_url);
     url.push_str(path);

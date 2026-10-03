@@ -1,0 +1,29 @@
+{
+  "name": "forbidden",
+  "summary": "A 403 is a terminal error.",
+  "contract": [
+    "2",
+    "6"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 403,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "file": "wire/errors/403.json"
+        }
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "error",
+      "kind": "forbidden",
+      "status": 403,
+      "code": "organization_suspended"
+    }
+  ]
+}

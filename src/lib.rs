@@ -14,6 +14,7 @@ pub mod pagination;
 #[rustfmt::skip]
 pub mod resources;
 mod serde_helpers;
+pub mod stream;
 #[rustfmt::skip]
 pub mod types;
 pub mod webhook;
@@ -25,6 +26,8 @@ pub use http::{encode_path, random_key};
 pub use meta::{API_KEY_ENV, DEFAULT_BASE_URL, IDEMPOTENCY_HEADER, PROJECT_HEADER};
 pub use meta::{PACKAGE_NAME, USER_AGENT, VERSION};
 pub use pagination::{CursorPage, Paginator};
+pub use stream::{EventStream, StreamError, StreamErrorKind, StreamEvent};
+pub use stream::{StreamItem, StreamOptions};
 pub use webhook::verify_webhook_with_tolerance;
 pub use webhook::{compute_signature, verify_signature, verify_webhook};
 

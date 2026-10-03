@@ -1,0 +1,9 @@
+retry: 3000
+
+event: reset
+data: {"reason":"cursor_unknown"}
+
+id: c1.mubbsbd4
+event: message.received
+data: {"id":"evt_res4","object":"event","type":"message.received","createdAt":"2026-09-21T06:13:24.000Z","organizationId":"org_acme","projectId":null,"data":{"object":{"object":"message","id":"m_res_4","accountId":"acc_1","chatId":"chat_1","direction":"inbound","from":"15551230001","text":"message 4"}}}
+

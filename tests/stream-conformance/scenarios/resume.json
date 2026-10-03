@@ -1,0 +1,90 @@
+{
+  "name": "resume",
+  "summary": "After a connection ends the client resumes with its cursor, and the event the replay repeats is delivered once.",
+  "contract": [
+    "1.7",
+    "3",
+    "4",
+    "5"
+  ],
+  "connections": [
+    {
+      "at_ms": 0,
+      "request": {
+        "headers": {
+          "last-event-id": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/resume_before.sse"
+          }
+        ],
+        "end": "close"
+      }
+    },
+    {
+      "at_ms": 3000,
+      "request": {
+        "headers": {
+          "last-event-id": "c1.mubbs91s"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/resume_after.sse"
+          }
+        ],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_res1",
+      "cursor": "c1.mubbs8a0"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_res2",
+      "cursor": "c1.mubbs91s"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 3000,
+      "failures": 1
+    },
+    {
+      "type": "open"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_res3",
+      "cursor": "c1.mubbs9tk"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_res4",
+      "cursor": "c1.mubbsalc"
+    }
+  ]
+}

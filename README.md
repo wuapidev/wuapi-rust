@@ -6,11 +6,12 @@
 [![docs.rs](https://docs.rs/wuapi/badge.svg)](https://docs.rs/wuapi)
 ![license](https://img.shields.io/crates/l/wuapi.svg)
 
-Rust SDK for [wuapi](https://wuapi.dev), a WhatsApp API for developers. Link your own WhatsApp numbers by QR code or pairing code, send and receive messages, manage chats, contacts, groups, communities and channels, split them into projects, and verify webhooks.
+Rust SDK for [wuapi](https://wuapi.dev), a WhatsApp API for developers. Link your own WhatsApp numbers by QR code or pairing code, send and receive messages, manage chats, contacts, groups, communities and channels, split them into projects, and receive events over Webhooks or Streams.
 
 - Async, on `reqwest` and `tokio`. TLS is rustls: there is no OpenSSL to install.
 - Types for every schema of the [OpenAPI spec](https://wuapi.dev/openapi.json), with `serde`.
 - A timeout on every attempt, retries that never repeat a send, and idempotency keys built in.
+- Streams: your events over one connection, with reconnect and resume built in.
 
 Docs: [wuapi.dev/docs](https://wuapi.dev/docs). API reference for this crate: [docs.rs/wuapi](https://docs.rs/wuapi).
 
@@ -261,6 +262,64 @@ fn handle(raw_body: &[u8], signature: &str, secret: &str) -> Result<(), WebhookV
 
 An event type added after this version of the SDK parses as `Event::Unknown` with its raw JSON, instead of failing.
 
+## Streams
+
+Streams deliver the same events as Webhooks over one connection your code opens: no public endpoint, no signature to verify. Use Streams from a script, a worker behind a firewall, a desktop app, or while you build.
+
+```rust,no_run
+use wuapi::resources::events::EventsStreamParams;
+use wuapi::types::{Event, WebhookEventType};
+use wuapi::Wuapi;
+
+async fn listen(client: &Wuapi) -> Result<(), Box<dyn std::error::Error>> {
+    let params = EventsStreamParams::new().types([WebhookEventType::MessageReceived]);
+    let mut stream = client.events().stream(params)?;
+    while let Some(event) = stream.next_event().await {
+        let event = event?; // a StreamError: the stream has stopped for good
+        match event.parse()? {
+            Event::Message(message) => println!("{:?}", message.data.object.text),
+            other => println!("{} {other:?}", event.event),
+        }
+        // Save `event.cursor` to resume from here after a restart.
+    }
+    Ok(())
+}
+```
+
+The stream connects, and when the connection ends (a deploy, a network drop, an hour of age) it waits and connects again with its cursor, so nothing in between is missed; an event a replay repeats is delivered once. It never gives up by itself: only what waiting cannot fix ends it, as a `StreamError` whose `kind` is `Unauthorized`, `Forbidden`, `InvalidRequest`, `NotFound`, `Refused` or `UnexpectedResponse`. A `429` (the Free plan allows 3 open stream connections per organization), a `5xx` and a network error are waited out, honoring `Retry-After`, with jitter and at most 6 connects a minute for the whole client.
+
+`next_item()` reports everything in order, not only events: `Open`, `Reset` (the cursor was too old and events may have been missed: resync over REST, the stream goes on live), `Skipped` and `Reconnecting` with its reason and delay.
+
+```rust,no_run
+use std::time::Duration;
+
+use wuapi::resources::events::EventsStreamParams;
+use wuapi::{StreamItem, StreamOptions, Wuapi};
+
+async fn watch(client: &Wuapi, saved: Option<String>) -> Result<(), Box<dyn std::error::Error>> {
+    let mut params = EventsStreamParams::new().accounts(["k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr"]);
+    params.last_event_id = saved;
+    let options = StreamOptions::new().give_up_after(Duration::from_secs(30 * 60));
+    let mut stream = client.events().stream_with(params, options)?;
+    while let Some(item) = stream.next_item().await {
+        match item? {
+            StreamItem::Event(event) => println!("{} {}", event.event, event.data),
+            StreamItem::Reset { reason } => println!("missed events ({reason}): resync over REST"),
+            StreamItem::Reconnecting(waiting) => println!("{:?}, back in {:?}", waiting.reason, waiting.delay),
+            _ => {}
+        }
+    }
+    Ok(())
+}
+```
+
+- `next_event()` and `next_item()` lose nothing when their future is dropped, so they can be raced in a `select!`. `into_stream()` and `into_items()` turn the stream into a `futures` `Stream`.
+- `event.data` is the envelope exactly as received, and `event.parse()` types it; a type newer than this version parses as `Event::Unknown`.
+- A stream without a cursor starts now. Within 30 minutes of a cursor, wuapi replays what happened since.
+- `close()` ends a stream; dropping it does too. `restart_after(wait, keep_cursor)` starts a stopped stream again.
+- The key is sent in the `Authorization` header only, and only to `https` (or to `http` on this machine). `Wuapi::builder().stream_base_url(..)` points at another stream host.
+- `wuapi::stream` has the parts for a caller that drives the connection itself: `HttpStreamTransport`, `SseParser`, `StreamBudget`, and `EventStream::with_transport` with a description of your own.
+
 ## Projects
 
 Three levels: your **organization** pays; a **project** is one of your customers, or an environment, with its own accounts, API keys, webhooks, limits and usage; an **account** is a linked WhatsApp number.
@@ -363,7 +422,7 @@ async fn raw(client: &Wuapi) -> Result<serde_json::Value, wuapi::Error> {
 
 ## Generated code
 
-This crate, version 0.12.0, is generated from the wuapi OpenAPI spec: its types, methods, tests and this README. Do not edit it by hand. Report problems at [wuapi.dev/support](https://wuapi.dev/support).
+This crate, version 0.13.0, is generated from the wuapi OpenAPI spec: its types, methods, tests and this README. Do not edit it by hand. Report problems at [wuapi.dev/support](https://wuapi.dev/support).
 
 ## License
 

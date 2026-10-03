@@ -1,0 +1,29 @@
+{
+  "name": "not-a-stream",
+  "summary": "A 200 that is not an event stream is a terminal error.",
+  "contract": [
+    "2",
+    "6"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "text": "{}"
+        }
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "error",
+      "kind": "unexpected_response",
+      "status": 200,
+      "code": null
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "name": "live",
+  "summary": "One connection, one event: the request the client sends and the event it reports.",
+  "contract": [
+    "1.1",
+    "1.2",
+    "1.5",
+    "1.6",
+    "1.7",
+    "3",
+    "8"
+  ],
+  "connections": [
+    {
+      "at_ms": 0,
+      "request": {
+        "headers": {
+          "last-event-id": null,
+          "{project_header}": null,
+          "cache-control": "no-cache"
+        },
+        "query": {}
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/live.sse"
+          }
+        ],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open",
+      "at_ms": 0
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_live1",
+      "cursor": "c1.mubbs8a0"
+    }
+  ]
+}

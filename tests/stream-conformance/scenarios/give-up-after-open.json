@@ -1,0 +1,56 @@
+{
+  "name": "give-up-after-open",
+  "summary": "The give-up time counts from the moment the last connection ended, not from the start.",
+  "contract": [
+    "5.7"
+  ],
+  "options": {
+    "give_up_after_ms": 10000
+  },
+  "connections": [
+    {
+      "at_ms": 0,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "text": "retry: 3000\n\n"
+          },
+          {
+            "wait_ms": 8000
+          }
+        ],
+        "end": "close"
+      }
+    },
+    {
+      "at_ms": 11000,
+      "response": {
+        "hang": true
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open",
+      "at_ms": 0
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 3000,
+      "failures": 1,
+      "at_ms": 8000
+    },
+    {
+      "type": "error",
+      "kind": "gave_up",
+      "status": null,
+      "code": null,
+      "at_ms": 18000
+    }
+  ]
+}
