@@ -1,0 +1,70 @@
+{
+  "name": "give-up",
+  "summary": "With a give-up time, a client that has had no open connection for that long stops with a terminal error.",
+  "contract": [
+    "5.7",
+    "6"
+  ],
+  "options": {
+    "give_up_after_ms": 10000
+  },
+  "connections": [
+    {
+      "at_ms": 0,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 3000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 6000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 9000,
+      "response": {
+        "unreachable": true
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3000,
+      "failures": 1
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3000,
+      "failures": 2
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3000,
+      "failures": 3
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3000,
+      "failures": 4
+    },
+    {
+      "type": "error",
+      "kind": "gave_up",
+      "status": null,
+      "code": null,
+      "at_ms": 10000
+    }
+  ]
+}

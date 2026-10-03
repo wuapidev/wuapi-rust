@@ -1,0 +1,115 @@
+{
+  "name": "backoff",
+  "summary": "The random part of the wait doubles with every failure up to backoff_cap, on top of the floor.",
+  "contract": [
+    "5.1",
+    "5.4",
+    "5.5"
+  ],
+  "random": [
+    1
+  ],
+  "connections": [
+    {
+      "at_ms": 0,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 4000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 9000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 16000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 27000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 46000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 79000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 112000,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 4000,
+      "failures": 1
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 5000,
+      "failures": 2
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 7000,
+      "failures": 3
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 11000,
+      "failures": 4
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 19000,
+      "failures": 5
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 33000,
+      "failures": 6
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 33000,
+      "failures": 7
+    },
+    {
+      "type": "open",
+      "at_ms": 112000
+    }
+  ]
+}

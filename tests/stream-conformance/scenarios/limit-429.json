@@ -1,0 +1,130 @@
+{
+  "name": "limit-429",
+  "summary": "A 429 is retried after its Retry-After, after the description's wait when it has none, and never after more than retry_after_max.",
+  "contract": [
+    "2",
+    "5.3"
+  ],
+  "connections": [
+    {
+      "at_ms": 0,
+      "response": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "30"
+        },
+        "body": {
+          "file": "wire/errors/429_limit.json"
+        }
+      }
+    },
+    {
+      "at_ms": 30000,
+      "response": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "file": "wire/errors/429_limit.json"
+        }
+      }
+    },
+    {
+      "at_ms": 60000,
+      "response": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "file": "wire/errors/429_rate.json"
+        }
+      }
+    },
+    {
+      "at_ms": 120000,
+      "response": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "900"
+        },
+        "body": {
+          "file": "wire/errors/429_rate.json"
+        }
+      }
+    },
+    {
+      "at_ms": 420000,
+      "response": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "2"
+        },
+        "body": {
+          "file": "wire/errors/429_rate.json"
+        }
+      }
+    },
+    {
+      "at_ms": 423000,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "reconnecting",
+      "reason": "refused",
+      "delay_ms": 30000,
+      "failures": 1,
+      "status": 429,
+      "code": "stream_connection_limit"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "refused",
+      "delay_ms": 30000,
+      "failures": 2,
+      "status": 429,
+      "code": "stream_connection_limit"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "refused",
+      "delay_ms": 60000,
+      "failures": 3,
+      "status": 429,
+      "code": "rate_limited"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "refused",
+      "delay_ms": 300000,
+      "failures": 4,
+      "status": 429,
+      "code": "rate_limited"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "refused",
+      "delay_ms": 3000,
+      "failures": 5,
+      "status": 429,
+      "code": "rate_limited"
+    },
+    {
+      "type": "open",
+      "at_ms": 423000
+    }
+  ]
+}

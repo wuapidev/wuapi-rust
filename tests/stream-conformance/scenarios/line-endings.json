@@ -1,0 +1,68 @@
+{
+  "name": "line-endings",
+  "summary": "LF, CR and CRLF end a line, a CRLF may be cut between chunks, and a leading byte order mark is skipped.",
+  "contract": [
+    "3.1",
+    "3.2"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "text": "﻿retry: 3000\r\n\r\n"
+          },
+          {
+            "text": "id: c1.a\r\nevent: message.received\r\ndata: {\"id\":\"evt_1\",\"object\":\"event\",\"type\":\"message.received\"}\r\n\r\n"
+          },
+          {
+            "text": "id: c1.b\revent: message.received\rdata: {\"id\":\"evt_2\",\"object\":\"event\",\"type\":\"message.received\"}\r\r"
+          },
+          {
+            "text": "id: c1.c\r"
+          },
+          {
+            "text": "\nevent: message.received\r"
+          },
+          {
+            "text": "\ndata: {\"id\":\"evt_3\",\"object\":\"event\",\"type\":\"message.received\"}\r"
+          },
+          {
+            "text": "\n\r"
+          },
+          {
+            "text": "\n"
+          }
+        ],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_1",
+      "cursor": "c1.a"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_2",
+      "cursor": "c1.b"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_3",
+      "cursor": "c1.c"
+    }
+  ]
+}

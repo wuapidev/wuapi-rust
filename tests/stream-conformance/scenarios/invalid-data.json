@@ -1,0 +1,58 @@
+{
+  "name": "invalid-data",
+  "summary": "Data that is not a JSON object is reported and skipped; the stream goes on and the cursor moves.",
+  "contract": [
+    "3"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "text": "id: c1.a\nevent: message.received\ndata: not json\n\n"
+          },
+          {
+            "text": "id: c1.b\ndata: [1,2]\n\n"
+          },
+          {
+            "text": "data: \"text\"\n\n"
+          },
+          {
+            "text": "id: c1.c\nevent: message.received\ndata: {\"id\":\"evt_1\",\"object\":\"event\",\"type\":\"message.received\"}\n\n"
+          }
+        ],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "skipped",
+      "reason": "invalid_data",
+      "event": "message.received"
+    },
+    {
+      "type": "skipped",
+      "reason": "invalid_data",
+      "event": "message"
+    },
+    {
+      "type": "skipped",
+      "reason": "invalid_data",
+      "event": "message"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_1",
+      "cursor": "c1.c"
+    }
+  ]
+}

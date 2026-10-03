@@ -1,0 +1,58 @@
+{
+  "name": "duplicate",
+  "summary": "The same event under two cursors is delivered once, and the cursor still moves past the repeat.",
+  "contract": [
+    "3"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/duplicate.sse"
+          }
+        ],
+        "end": "close"
+      }
+    },
+    {
+      "request": {
+        "headers": {
+          "last-event-id": "c1.mubbsfzs"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_live1",
+      "cursor": "c1.mubbs8a0"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 3000,
+      "failures": 1
+    },
+    {
+      "type": "open"
+    }
+  ]
+}

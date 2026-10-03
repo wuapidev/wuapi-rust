@@ -1,0 +1,51 @@
+{
+  "name": "split-anywhere",
+  "summary": "Chunks cut lines and UTF-8 characters anywhere: the result is the same as for the whole bytes.",
+  "contract": [
+    "3.1"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/live.sse",
+            "chunk_bytes": 1
+          },
+          {
+            "hex": "69643a2063312e620a6576656e743a206d6573736167652e72656365697665640a646174613a207b226964223a226576745f32222c226f626a656374223a226576656e74222c2274797065223a226d6573736167652e7265636569766564222c2264617461223a7b226f626a656374223a7b2274657874223a2261c3b1e2"
+          },
+          {
+            "hex": "82acf09f"
+          },
+          {
+            "hex": "9880227d7d7d0a0a"
+          }
+        ],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_live1",
+      "cursor": "c1.mubbs8a0"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_2",
+      "cursor": "c1.b",
+      "data": "{\"id\":\"evt_2\",\"object\":\"event\",\"type\":\"message.received\",\"data\":{\"object\":{\"text\":\"añ€😀\"}}}"
+    }
+  ]
+}

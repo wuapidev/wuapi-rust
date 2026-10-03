@@ -1,0 +1,31 @@
+{
+  "name": "cancel-while-waiting",
+  "summary": "A stream cancelled while it waits ends without an error and never connects again.",
+  "contract": [
+    "7"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "30"
+        },
+        "body": {
+          "file": "wire/errors/429_limit.json"
+        }
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "reconnecting",
+      "reason": "refused",
+      "delay_ms": 30000,
+      "failures": 1,
+      "status": 429,
+      "code": "stream_connection_limit"
+    }
+  ]
+}

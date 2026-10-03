@@ -1,0 +1,10 @@
+retry: 3000
+
+id: c1.mubbs8a0
+event: message.received
+data: {"id":"evt_res1","object":"event","type":"message.received","createdAt":"2026-09-21T06:13:21.000Z","organizationId":"org_acme","projectId":null,"data":{"object":{"object":"message","id":"m_res_1","accountId":"acc_1","chatId":"chat_1","direction":"inbound","from":"15551230001","text":"message 1"}}}
+
+id: c1.mubbs91s
+event: message.received
+data: {"id":"evt_res2","object":"event","type":"message.received","createdAt":"2026-09-21T06:13:22.000Z","organizationId":"org_acme","projectId":null,"data":{"object":{"object":"message","id":"m_res_2","accountId":"acc_1","chatId":"chat_1","direction":"inbound","from":"15551230001","text":"message 2"}}}
+

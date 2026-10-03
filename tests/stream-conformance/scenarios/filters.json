@@ -1,0 +1,55 @@
+{
+  "name": "filters",
+  "summary": "Filters are comma-joined query parameters, and the caller's first cursor is sent.",
+  "contract": [
+    "1.6",
+    "1.7"
+  ],
+  "params": {
+    "types": [
+      "message.received",
+      "message.sent"
+    ],
+    "accounts": [
+      "acc_1",
+      "acc_2"
+    ],
+    "last_event_id": "c1.z"
+  },
+  "connections": [
+    {
+      "request": {
+        "headers": {
+          "last-event-id": "c1.z"
+        },
+        "query": {
+          "types": "message.received,message.sent",
+          "accounts": "acc_1,acc_2"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/live.sse"
+          }
+        ],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_live1",
+      "cursor": "c1.mubbs8a0"
+    }
+  ]
+}

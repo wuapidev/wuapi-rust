@@ -1,0 +1,31 @@
+{
+  "name": "redirect",
+  "summary": "A redirect is an answer, not a second request: the client stops instead of following it with the key.",
+  "contract": [
+    "1.8",
+    "2",
+    "6"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 302,
+        "headers": {
+          "content-type": "text/plain",
+          "location": "https://elsewhere.example/v1/events/stream"
+        },
+        "body": {
+          "text": ""
+        }
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "error",
+      "kind": "refused",
+      "status": 302,
+      "code": null
+    }
+  ]
+}

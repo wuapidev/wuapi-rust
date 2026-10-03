@@ -1,0 +1,54 @@
+{
+  "name": "unauthorized-not-api",
+  "summary": "A 401 that is not the API's error body is somebody else's page: it is retried, not an error.",
+  "contract": [
+    "2"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 401,
+        "headers": {
+          "content-type": "text/html"
+        },
+        "body": {
+          "text": "<!doctype html>\n<html><head><title>401</title></head><body><h1>Unauthorized</h1></body></html>\n"
+        }
+      }
+    },
+    {
+      "at_ms": 3000,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/live.sse"
+          }
+        ],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "reconnecting",
+      "reason": "refused",
+      "delay_ms": 3000,
+      "failures": 1,
+      "status": 401,
+      "code": null
+    },
+    {
+      "type": "open"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_live1",
+      "cursor": "c1.mubbs8a0"
+    }
+  ]
+}

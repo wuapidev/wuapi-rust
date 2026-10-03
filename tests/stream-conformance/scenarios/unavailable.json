@@ -1,0 +1,109 @@
+{
+  "name": "unavailable",
+  "summary": "A 503, another 5xx and a 408 are retried; a Retry-After that is not a number is ignored.",
+  "contract": [
+    "2",
+    "5.3"
+  ],
+  "connections": [
+    {
+      "at_ms": 0,
+      "response": {
+        "status": 503,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "5"
+        },
+        "body": {
+          "file": "wire/errors/503.json"
+        }
+      }
+    },
+    {
+      "at_ms": 5000,
+      "response": {
+        "status": 503,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "soon"
+        },
+        "body": {
+          "file": "wire/errors/503.json"
+        }
+      }
+    },
+    {
+      "at_ms": 8000,
+      "response": {
+        "status": 502,
+        "headers": {
+          "content-type": "text/html"
+        },
+        "body": {
+          "text": ""
+        }
+      }
+    },
+    {
+      "at_ms": 11000,
+      "response": {
+        "status": 408,
+        "headers": {
+          "content-type": "text/plain"
+        },
+        "body": {
+          "text": ""
+        }
+      }
+    },
+    {
+      "at_ms": 14000,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "reconnecting",
+      "reason": "refused",
+      "delay_ms": 5000,
+      "failures": 1,
+      "status": 503,
+      "code": "service_unavailable"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "refused",
+      "delay_ms": 3000,
+      "failures": 2,
+      "status": 503,
+      "code": "service_unavailable"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "refused",
+      "delay_ms": 3000,
+      "failures": 3,
+      "status": 502,
+      "code": null
+    },
+    {
+      "type": "reconnecting",
+      "reason": "refused",
+      "delay_ms": 3000,
+      "failures": 4,
+      "status": 408,
+      "code": null
+    },
+    {
+      "type": "open",
+      "at_ms": 14000
+    }
+  ]
+}

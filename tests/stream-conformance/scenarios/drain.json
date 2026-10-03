@@ -1,0 +1,87 @@
+{
+  "name": "drain",
+  "summary": "A draining server sends a retry and closes: the client waits that long, and the next stream's retry replaces it.",
+  "contract": [
+    "3.6",
+    "4",
+    "5.3"
+  ],
+  "connections": [
+    {
+      "at_ms": 0,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/drain.sse"
+          }
+        ],
+        "end": "close"
+      }
+    },
+    {
+      "at_ms": 7000,
+      "request": {
+        "headers": {
+          "last-event-id": "c1.mubbs8a0"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "text": "retry: 3000\n\n"
+          }
+        ],
+        "end": "close"
+      }
+    },
+    {
+      "at_ms": 10000,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_res1",
+      "cursor": "c1.mubbs8a0"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 7000,
+      "failures": 1
+    },
+    {
+      "type": "open"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 3000,
+      "failures": 2
+    },
+    {
+      "type": "open",
+      "at_ms": 10000
+    }
+  ]
+}

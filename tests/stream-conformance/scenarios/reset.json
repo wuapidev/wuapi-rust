@@ -1,0 +1,143 @@
+{
+  "name": "reset",
+  "summary": "A reset is reported with its reason, the cursor is forgotten, and the stream goes on live.",
+  "contract": [
+    "3",
+    "1.7"
+  ],
+  "params": {
+    "last_event_id": "c1.old"
+  },
+  "connections": [
+    {
+      "request": {
+        "headers": {
+          "last-event-id": "c1.old"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/reset.sse"
+          }
+        ],
+        "end": "close"
+      }
+    },
+    {
+      "request": {
+        "headers": {
+          "last-event-id": "c1.mubbsbd4"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/reset_unknown.sse"
+          }
+        ],
+        "end": "close"
+      }
+    },
+    {
+      "request": {
+        "headers": {
+          "last-event-id": "c1.mubbsbd4"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "text": "event: reset\ndata: nope\n\n"
+          }
+        ],
+        "end": "close"
+      }
+    },
+    {
+      "request": {
+        "headers": {
+          "last-event-id": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/reset_not_logged.sse"
+          }
+        ],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "reset",
+      "reason": "cursor_expired"
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_res4",
+      "cursor": "c1.mubbsbd4"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 3000,
+      "failures": 1
+    },
+    {
+      "type": "open"
+    },
+    {
+      "type": "reset",
+      "reason": "cursor_unknown"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 3000,
+      "failures": 2
+    },
+    {
+      "type": "open"
+    },
+    {
+      "type": "reset",
+      "reason": "unknown"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 3000,
+      "failures": 3
+    },
+    {
+      "type": "open"
+    },
+    {
+      "type": "reset",
+      "reason": "not_logged"
+    }
+  ]
+}

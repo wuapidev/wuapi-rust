@@ -1,0 +1,59 @@
+{
+  "name": "idle",
+  "summary": "Any byte keeps a connection alive, a comment included; idle_timeout of silence ends it.",
+  "contract": [
+    "3.3",
+    "4"
+  ],
+  "connections": [
+    {
+      "at_ms": 0,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "text": "retry: 3000\n\n"
+          },
+          {
+            "wait_ms": 40000
+          },
+          {
+            "text": ": ping\n\n"
+          }
+        ],
+        "end": "hang"
+      }
+    },
+    {
+      "at_ms": 88000,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open",
+      "at_ms": 0
+    },
+    {
+      "type": "reconnecting",
+      "reason": "idle",
+      "delay_ms": 3000,
+      "failures": 0,
+      "at_ms": 85000
+    },
+    {
+      "type": "open",
+      "at_ms": 88000
+    }
+  ]
+}

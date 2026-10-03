@@ -1,0 +1,109 @@
+{
+  "name": "fields",
+  "summary": "How fields are read: joined data lines, the default event name, one stripped space, ignored lines, and what an id may be.",
+  "contract": [
+    "3.4",
+    "3.5",
+    "3.7",
+    "3.8",
+    "3.10"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "text": ": a comment\ndata: {\"id\":\"evt_1\",\ndata: \"object\":\"event\",\"type\":\"x.y\"}\n\n"
+          },
+          {
+            "text": "event: custom.type\ndata:{\"id\":\"evt_2\",\"object\":\"event\"}\nnocolon\nunknown: field\nid: c1.q\n\n"
+          },
+          {
+            "text": "data:  {\"id\":\"evt_3\",\"object\":\"event\"}\n\n"
+          },
+          {
+            "text": "event: message.received\nid: c1.r\n\n"
+          },
+          {
+            "text": "id: c1.bad\u0000x\ndata: {\"id\":\"evt_4\",\"object\":\"event\"}\n\n"
+          },
+          {
+            "text": "id:\ndata: {\"id\":\"evt_5\",\"object\":\"event\"}\n\n"
+          },
+          {
+            "text": "id: c1.half\ndata: {\"id\":\"evt_6\",\"object\":\"event\"}\n"
+          }
+        ],
+        "end": "close"
+      }
+    },
+    {
+      "at_ms": 3000,
+      "request": {
+        "headers": {
+          "last-event-id": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "event",
+      "event": "message",
+      "id": "evt_1",
+      "cursor": null,
+      "data": "{\"id\":\"evt_1\",\n\"object\":\"event\",\"type\":\"x.y\"}"
+    },
+    {
+      "type": "event",
+      "event": "custom.type",
+      "id": "evt_2",
+      "cursor": "c1.q",
+      "data": "{\"id\":\"evt_2\",\"object\":\"event\"}"
+    },
+    {
+      "type": "event",
+      "event": "message",
+      "id": "evt_3",
+      "cursor": "c1.q",
+      "data": " {\"id\":\"evt_3\",\"object\":\"event\"}"
+    },
+    {
+      "type": "event",
+      "event": "message",
+      "id": "evt_4",
+      "cursor": "c1.r"
+    },
+    {
+      "type": "event",
+      "event": "message",
+      "id": "evt_5",
+      "cursor": null
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 3000,
+      "failures": 1
+    },
+    {
+      "type": "open",
+      "at_ms": 3000
+    }
+  ]
+}

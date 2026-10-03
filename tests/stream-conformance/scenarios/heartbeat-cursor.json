@@ -1,0 +1,76 @@
+{
+  "name": "heartbeat-cursor",
+  "summary": "Comments are ignored, and a heartbeat that carries an id moves the cursor the next connect resumes from.",
+  "contract": [
+    "3.3",
+    "3.7",
+    "3.8",
+    "1.7"
+  ],
+  "connections": [
+    {
+      "at_ms": 0,
+      "request": {
+        "headers": {
+          "last-event-id": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "text": "retry: 3000\n\n"
+          },
+          {
+            "file": "wire/heartbeat.sse"
+          }
+        ],
+        "end": "close"
+      }
+    },
+    {
+      "at_ms": 3000,
+      "request": {
+        "headers": {
+          "last-event-id": "c1.mubbsj2w"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [
+          {
+            "file": "wire/live.sse"
+          }
+        ],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "open"
+    },
+    {
+      "type": "reconnecting",
+      "reason": "ended",
+      "delay_ms": 3000,
+      "failures": 1
+    },
+    {
+      "type": "open",
+      "at_ms": 3000
+    },
+    {
+      "type": "event",
+      "event": "message.received",
+      "id": "evt_live1",
+      "cursor": "c1.mubbs8a0"
+    }
+  ]
+}

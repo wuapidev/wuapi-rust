@@ -1,0 +1,110 @@
+{
+  "name": "budget",
+  "summary": "No more than connect_budget connects start in one window: the seventh waits for a slot.",
+  "contract": [
+    "5.6"
+  ],
+  "connections": [
+    {
+      "at_ms": 0,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 3000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 6000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 9000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 12000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 15000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 60000,
+      "response": {
+        "unreachable": true
+      }
+    },
+    {
+      "at_ms": 63000,
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream"
+        },
+        "stream": [],
+        "end": "hang"
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3000,
+      "failures": 1
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3000,
+      "failures": 2
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3000,
+      "failures": 3
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3000,
+      "failures": 4
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3000,
+      "failures": 5
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 45000,
+      "failures": 6
+    },
+    {
+      "type": "reconnecting",
+      "reason": "unreachable",
+      "delay_ms": 3000,
+      "failures": 7
+    },
+    {
+      "type": "open",
+      "at_ms": 63000
+    }
+  ]
+}

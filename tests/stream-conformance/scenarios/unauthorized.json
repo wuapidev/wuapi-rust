@@ -1,0 +1,29 @@
+{
+  "name": "unauthorized",
+  "summary": "A 401 from the API is a terminal error: the client stops and does not connect again.",
+  "contract": [
+    "2",
+    "6"
+  ],
+  "connections": [
+    {
+      "response": {
+        "status": 401,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "file": "wire/errors/401.json"
+        }
+      }
+    }
+  ],
+  "expect": [
+    {
+      "type": "error",
+      "kind": "unauthorized",
+      "status": 401,
+      "code": "unauthorized"
+    }
+  ]
+}
