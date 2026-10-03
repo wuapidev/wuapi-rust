@@ -315,7 +315,7 @@ async fn watch(client: &Wuapi, saved: Option<String>) -> Result<(), Box<dyn std:
 
 - `next_event()` and `next_item()` lose nothing when their future is dropped, so they can be raced in a `select!`. `into_stream()` and `into_items()` turn the stream into a `futures` `Stream`.
 - `event.data` is the envelope exactly as received, and `event.parse()` types it; a type newer than this version parses as `Event::Unknown`.
-- A stream without a cursor starts now. Within 30 minutes of a cursor, wuapi replays what happened since.
+- A stream without a cursor starts now. Within 28 minutes of a cursor, wuapi replays what happened since (events are kept 30 minutes, but only 28 are guaranteed).
 - `close()` ends a stream; dropping it does too. `restart_after(wait, keep_cursor)` starts a stopped stream again.
 - The key is sent in the `Authorization` header only, and only to `https` (or to `http` on this machine). `Wuapi::builder().stream_base_url(..)` points at another stream host.
 - `wuapi::stream` has the parts for a caller that drives the connection itself: `HttpStreamTransport`, `SseParser`, `StreamBudget`, and `EventStream::with_transport` with a description of your own.
@@ -422,7 +422,7 @@ async fn raw(client: &Wuapi) -> Result<serde_json::Value, wuapi::Error> {
 
 ## Generated code
 
-This crate, version 0.13.0, is generated from the wuapi OpenAPI spec: its types, methods, tests and this README. Do not edit it by hand. Report problems at [wuapi.dev/support](https://wuapi.dev/support).
+This crate, version 0.13.1, is generated from the wuapi OpenAPI spec: its types, methods, tests and this README. Do not edit it by hand. Report problems at [wuapi.dev/support](https://wuapi.dev/support).
 
 ## License
 
