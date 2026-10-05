@@ -35,7 +35,7 @@ impl GroupsResource {
 
     /// Create a group or community
     ///
-    /// With `community: true`, creates a community (`participants` may be empty); link groups to it with `POST .../groups/{groupId}/subgroups`.
+    /// With `community: true`, creates a community (`participants` may be empty); link groups to it with `POST .../groups/{groupId}/subgroups`. With `communityId`, creates the group inside that community (the group's `communityId` is then that id). The two cannot be combined: `400 invalid_request`. While the account's engine cannot create a group inside a community yet, `communityId` answers `400 not_supported` and nothing is created.
     ///
     /// `POST /v1/accounts/{accountId}/groups`
     ///

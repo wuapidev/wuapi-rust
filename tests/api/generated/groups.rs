@@ -34,6 +34,8 @@ async fn list_streams_every_page() {
           "description": "description 1",
           "ownerId": "ownerId 1",
           "community": true,
+          "communityId": "communityId 1",
+          "default": true,
           "locked": true,
           "announce": true,
           "participants": [
@@ -59,6 +61,8 @@ async fn list_streams_every_page() {
           "description": "description 1",
           "ownerId": "ownerId 1",
           "community": true,
+          "communityId": "communityId 1",
+          "default": true,
           "locked": true,
           "announce": true,
           "participants": [
@@ -89,6 +93,8 @@ async fn list_streams_every_page() {
         "description": "description 1",
         "ownerId": "ownerId 1",
         "community": true,
+        "communityId": "communityId 1",
+        "default": true,
         "locked": true,
         "announce": true,
         "participants": [
@@ -108,6 +114,8 @@ async fn list_streams_every_page() {
         "description": "description 1",
         "ownerId": "ownerId 1",
         "community": true,
+        "communityId": "communityId 1",
+        "default": true,
         "locked": true,
         "announce": true,
         "participants": [
@@ -141,6 +149,8 @@ async fn list_fetches_one_page() {
           "description": "description 1",
           "ownerId": "ownerId 1",
           "community": true,
+          "communityId": "communityId 1",
+          "default": true,
           "locked": true,
           "announce": true,
           "participants": [
@@ -175,6 +185,8 @@ async fn create() {
       "description": "description 1",
       "ownerId": "ownerId 1",
       "community": true,
+      "communityId": "communityId 1",
+      "default": true,
       "locked": true,
       "announce": true,
       "participants": [
@@ -187,7 +199,14 @@ async fn create() {
       "createdAt": "2026-09-24T09:00:00.000Z"
     }"#);
     let api = support::MockApi::start(vec![support::Reply::json(201, response.clone())]).await;
-    let params: types::GroupsCreateParams = support::from_json(r#"{"name":"name 1","participants":["participants 1"],"community":true}"#);
+    let params: types::GroupsCreateParams = support::from_json(r#"{
+      "name": "name 1",
+      "participants": [
+        "participants 1"
+      ],
+      "community": true,
+      "communityId": "communityId 1"
+    }"#);
     let result = api.client().groups().create("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", params).await.unwrap();
     support::assert_json(&result, &response);
     let calls = api.calls().await;
@@ -195,7 +214,14 @@ async fn create() {
     assert_eq!(calls[0].method, "POST");
     assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/groups");
     assert_eq!(calls[0].query, support::pairs(&[]));
-    support::assert_json(&calls[0].body, &support::json(r#"{"name":"name 1","participants":["participants 1"],"community":true}"#));
+    support::assert_json(&calls[0].body, &support::json(r#"{
+      "name": "name 1",
+      "participants": [
+        "participants 1"
+      ],
+      "community": true,
+      "communityId": "communityId 1"
+    }"#));
     assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_some_and(|key| !key.is_empty()));
 }
 
@@ -209,6 +235,8 @@ async fn create_retries_with_one_key() {
       "description": "description 1",
       "ownerId": "ownerId 1",
       "community": true,
+      "communityId": "communityId 1",
+      "default": true,
       "locked": true,
       "announce": true,
       "participants": [
@@ -221,7 +249,14 @@ async fn create_retries_with_one_key() {
       "createdAt": "2026-09-24T09:00:00.000Z"
     }"#);
     let api = support::MockApi::start(vec![support::Reply::status(503), support::Reply::json(201, response.clone())]).await;
-    let params: types::GroupsCreateParams = support::from_json(r#"{"name":"name 1","participants":["participants 1"],"community":true}"#);
+    let params: types::GroupsCreateParams = support::from_json(r#"{
+      "name": "name 1",
+      "participants": [
+        "participants 1"
+      ],
+      "community": true,
+      "communityId": "communityId 1"
+    }"#);
     let result = api.client().groups().create("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", params).await.unwrap();
     support::assert_json(&result, &response);
     let calls = api.calls().await;
@@ -273,6 +308,8 @@ async fn get_invite() {
       "description": "description 1",
       "ownerId": "ownerId 1",
       "community": true,
+      "communityId": "communityId 1",
+      "default": true,
       "locked": true,
       "announce": true,
       "participants": [
@@ -306,6 +343,8 @@ async fn get() {
       "description": "description 1",
       "ownerId": "ownerId 1",
       "community": true,
+      "communityId": "communityId 1",
+      "default": true,
       "locked": true,
       "announce": true,
       "participants": [
@@ -339,6 +378,8 @@ async fn update() {
       "description": "description 1",
       "ownerId": "ownerId 1",
       "community": true,
+      "communityId": "communityId 1",
+      "default": true,
       "locked": true,
       "announce": true,
       "participants": [
@@ -387,6 +428,8 @@ async fn update_without_params() {
       "description": "description 1",
       "ownerId": "ownerId 1",
       "community": true,
+      "communityId": "communityId 1",
+      "default": true,
       "locked": true,
       "announce": true,
       "participants": [
