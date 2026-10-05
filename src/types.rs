@@ -3483,6 +3483,11 @@ pub struct Group {
     pub owner_id: Option<String>,
     /// A community: it links other groups (its subgroups).
     pub community: bool,
+    /// The community this group is a subgroup of (its group id), `null` when the group is in no community. A community itself has `null` here.
+    #[serde(rename = "communityId")]
+    pub community_id: Option<String>,
+    /// The community's announcement group: the subgroup WhatsApp creates with the community. `false` for every other group.
+    pub default: bool,
     /// Only admins can edit the group info.
     pub locked: bool,
     /// Only admins can send.
@@ -3512,6 +3517,9 @@ pub struct GroupCreateRequest {
     /// Create a community instead of a group; `participants` may be empty.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub community: Option<bool>,
+    /// Create the group inside this community (its group id, `...@g.us`): it becomes one of the community's subgroups. Cannot be combined with `community`. `400 not_supported` while the account's engine cannot do it yet.
+    #[serde(rename = "communityId", default, skip_serializing_if = "Option::is_none")]
+    pub community_id: Option<String>,
 }
 
 impl GroupCreateRequest {
@@ -3522,6 +3530,7 @@ impl GroupCreateRequest {
             name: name.into(),
             participants: None,
             community: None,
+            community_id: None,
         }
     }
 }
@@ -4503,8 +4512,12 @@ pub struct GroupChange {
     /// The account this belongs to.
     #[serde(rename = "accountId")]
     pub account_id: String,
+    /// The group the change is about.
     #[serde(rename = "groupId")]
     pub group_id: String,
+    /// The community of a link or unlink (see `linked`, `unlinked`): the same id as `groupId` when WhatsApp reports the change on the community, the other group when it reports it on the subgroup. `null` for every other change.
+    #[serde(rename = "communityId")]
+    pub community_id: Option<String>,
     /// Who made the change, when WhatsApp says.
     #[serde(rename = "actorId")]
     pub actor_id: Option<String>,
@@ -4512,13 +4525,17 @@ pub struct GroupChange {
     pub removed: Vec<String>,
     pub promoted: Vec<String>,
     pub demoted: Vec<String>,
+    /// Group ids of the subgroups linked to the community `communityId`: each one's `communityId` is now that id.
+    pub linked: Vec<String>,
+    /// Group ids of the subgroups unlinked from the community `communityId` (also when the community was deleted): each one's `communityId` is now `null`.
+    pub unlinked: Vec<String>,
     /// The new name, when it changed.
     pub name: Option<String>,
     /// The new description, when it changed.
     pub description: Option<String>,
     pub locked: Option<bool>,
     pub announce: Option<bool>,
-    /// What moved.
+    /// What moved. `subgroups_linked` and `subgroups_unlinked`: a community gained or lost a subgroup (`communityId`, `linked`, `unlinked`).
     pub changes: Vec<GroupChangeChangesItem>,
     #[serde(rename = "changedAt")]
     pub changed_at: Option<String>,
@@ -4538,6 +4555,10 @@ string_enum! {
         Description = "description",
         /// `settings`
         Settings = "settings",
+        /// `subgroups_linked`
+        SubgroupsLinked = "subgroups_linked",
+        /// `subgroups_unlinked`
+        SubgroupsUnlinked = "subgroups_unlinked",
         @unknown Unknown,
     }
 }

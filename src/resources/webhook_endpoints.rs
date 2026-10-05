@@ -21,7 +21,7 @@ use crate::types;
 /// | `story.viewed`, `story.reacted` | A contact saw a story the account posted (once per contact and story), or reacted to it, changed or removed the reaction. | `story_viewer` |
 /// | `poll.voted` | Someone voted in a poll. | `poll_vote` |
 /// | `group.joined` | The account joined or created a group. | `group` |
-/// | `group.updated` | A group changed. | `group_change` |
+/// | `group.updated` | A group changed: participants, admins, name, description, settings, or a subgroup linked to or unlinked from a community. | `group_change` |
 /// | `group.join_requested`, `group.join_request_revoked` | Someone asked to join a group that needs approval, or withdrew the request. | `group_join_request` |
 /// | `chat.updated` | A chat was archived, pinned, muted, marked read, deleted, cleared or a message starred, on the phone or another device. Live changes only: the state wuapi takes from the syncs that follow linking (see `Chat`) is not sent as events, read it from `GET /v1/accounts/{accountId}/chats`. | `chat_change` |
 /// | `chat.presence_updated` | A contact is typing or recording in a chat. | `chat_presence` |
