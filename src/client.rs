@@ -13,6 +13,7 @@ use crate::resources::contacts::ContactsResource;
 use crate::resources::events::EventsResource;
 use crate::resources::favorite_stickers::FavoriteStickersResource;
 use crate::resources::groups::GroupsResource;
+use crate::resources::incoming_webhooks::IncomingWebhooksResource;
 use crate::resources::invitations::InvitationsResource;
 use crate::resources::labels::LabelsResource;
 use crate::resources::messages::MessagesResource;
@@ -201,6 +202,12 @@ impl Wuapi {
     #[must_use]
     pub fn webhook_endpoints(&self) -> WebhookEndpointsResource {
         WebhookEndpointsResource::new(self.http.clone())
+    }
+
+    /// A secret URL that sends a WhatsApp message from one of your accounts to one fixed contact or group: `POST` a body to it, no API key. Manage them here; the URL in each object is the credential.
+    #[must_use]
+    pub fn incoming_webhooks(&self) -> IncomingWebhooksResource {
+        IncomingWebhooksResource::new(self.http.clone())
     }
 
     /// The `projects` methods.

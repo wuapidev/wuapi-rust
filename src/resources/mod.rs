@@ -12,6 +12,7 @@ pub mod contacts;
 pub mod events;
 pub mod favorite_stickers;
 pub mod groups;
+pub mod incoming_webhooks;
 pub mod invitations;
 pub mod labels;
 pub mod messages;
