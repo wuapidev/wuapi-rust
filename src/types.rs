@@ -4004,6 +4004,83 @@ pub struct WebhookEndpointUpdateRequest {
     pub active: Option<bool>,
 }
 
+/// A URL that sends a WhatsApp message. `POST` a body to `url` and the text goes from `accountId` to `to`; the URL is the credential, so keep it secret. Send it with no API key. Rotate it with `rotateUrl`.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct IncomingWebhook {
+    /// Always `incoming_webhook`.
+    pub object: String,
+    pub id: String,
+    /// The account the messages are sent from.
+    #[serde(rename = "accountId")]
+    pub account_id: String,
+    /// The project of the account, or `null` when it has none.
+    #[serde(rename = "projectId")]
+    pub project_id: Option<String>,
+    /// A label for you. 1 to 60 characters.
+    pub name: String,
+    /// The fixed destination: a contact (`+584121234567` or `lid:<digits>`) or a group (`...@g.us`).
+    pub to: String,
+    /// A paused hook answers `403` and sends nothing.
+    pub enabled: bool,
+    /// Where to `POST` the message. It changes when you rotate it, and the old URL stops working.
+    pub url: String,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+    #[serde(rename = "updatedAt")]
+    pub updated_at: String,
+}
+
+/// A page of `IncomingWebhook` objects.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct IncomingWebhookList {
+    /// Always `list`.
+    pub object: String,
+    pub items: Vec<IncomingWebhook>,
+    /// Pass as `cursor` to get the next page. `null` on the last page.
+    #[serde(rename = "nextCursor")]
+    pub next_cursor: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct IncomingWebhookCreateRequest {
+    /// The account to send from. A project key can use only its own project's accounts.
+    #[serde(rename = "accountId")]
+    pub account_id: String,
+    /// A label for you. 1 to 60 characters.
+    pub name: String,
+    /// The fixed destination: `+584121234567`, `lid:<digits>` or a group `...@g.us`.
+    pub to: String,
+}
+
+impl IncomingWebhookCreateRequest {
+    /// A `IncomingWebhookCreateRequest` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(
+        account_id: impl Into<String>,
+        name: impl Into<String>,
+        to: impl Into<String>,
+    ) -> Self {
+        Self {
+            account_id: account_id.into(),
+            name: name.into(),
+            to: to.into(),
+        }
+    }
+}
+
+/// Provide at least one field.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
+pub struct IncomingWebhookUpdateRequest {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// `false` pauses the hook: its URL answers `403` until it is enabled again.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub enabled: Option<bool>,
+    /// `true` issues a new URL; the old one stops working at once. The response carries the new `url`.
+    #[serde(rename = "rotateUrl", default, skip_serializing_if = "Option::is_none")]
+    pub rotate_url: Option<bool>,
+}
+
 /// A calendar month in UTC.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Period {
@@ -6453,6 +6530,28 @@ pub type WebhookEndpointsCreateParams = WebhookEndpointCreateRequest;
 /// Params for `webhook_endpoints.update`.
 pub type WebhookEndpointsUpdateParams = WebhookEndpointUpdateRequest;
 
+/// Params for `incoming_webhooks.list`.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, Default)]
+pub struct IncomingWebhooksListParams {
+    /// Page size, 1 to 100.
+    ///
+    /// Default: `50`.
+    #[serde(default)]
+    pub limit: Option<i64>,
+    /// Opaque cursor from a previous page's `nextCursor`. An invalid or expired cursor answers `400 invalid_request`.
+    #[serde(default)]
+    pub cursor: Option<String>,
+    /// Filter by project: a project id, `ext:<externalId>`, or `none` for resources in no project. With an organization scope and no filter, the list covers every project and the unassigned resources. With a project scope the list is always that project's; naming another project answers `403 forbidden`. An unknown project answers `404 project_not_found`.
+    #[serde(rename = "projectId", default)]
+    pub project_id: Option<String>,
+}
+
+/// Params for `incoming_webhooks.create`.
+pub type IncomingWebhooksCreateParams = IncomingWebhookCreateRequest;
+
+/// Params for `incoming_webhooks.update`.
+pub type IncomingWebhooksUpdateParams = IncomingWebhookUpdateRequest;
+
 /// Params for `projects.create`.
 pub type ProjectsCreateParams = ProjectCreateRequest;
 
@@ -6741,6 +6840,18 @@ impl crate::pagination::CursorPage for ChannelMessageList {
 
 impl crate::pagination::CursorPage for WebhookEndpointList {
     type Item = WebhookEndpoint;
+
+    fn next_cursor(&self) -> Option<&str> {
+        self.next_cursor.as_deref()
+    }
+
+    fn into_items(self) -> Vec<Self::Item> {
+        self.items
+    }
+}
+
+impl crate::pagination::CursorPage for IncomingWebhookList {
+    type Item = IncomingWebhook;
 
     fn next_cursor(&self) -> Option<&str> {
         self.next_cursor.as_deref()

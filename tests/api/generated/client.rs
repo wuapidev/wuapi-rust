@@ -8867,6 +8867,277 @@ mod webhook_endpoints {
     }
 }
 
+mod incoming_webhooks {
+    use super::*;
+
+    #[tokio::test]
+    async fn list_streams_every_page() {
+        let first = support::json(r#"{
+          "object": "list",
+          "items": [
+            {
+              "object": "incoming_webhook",
+              "id": "id 1",
+              "accountId": "accountId 1",
+              "projectId": "projectId 1",
+              "name": "name 1",
+              "to": "to 1",
+              "enabled": true,
+              "url": "https://example.com/url",
+              "createdAt": "2026-09-24T09:00:00.000Z",
+              "updatedAt": "2026-09-24T09:00:00.000Z"
+            }
+          ],
+          "nextCursor": "cursor_2"
+        }"#);
+        let last = support::json(r#"{
+          "object": "list",
+          "items": [
+            {
+              "object": "incoming_webhook",
+              "id": "id 1",
+              "accountId": "accountId 1",
+              "projectId": "projectId 1",
+              "name": "name 1",
+              "to": "to 1",
+              "enabled": true,
+              "url": "https://example.com/url",
+              "createdAt": "2026-09-24T09:00:00.000Z",
+              "updatedAt": "2026-09-24T09:00:00.000Z"
+            }
+          ],
+          "nextCursor": null
+        }"#);
+        let api = support::MockApi::start(vec![
+            support::Reply::json(200, first),
+            support::Reply::json(200, last),
+        ])
+        .await;
+        let params: types::IncomingWebhooksListParams = support::from_json(r#"{"limit":50,"cursor":"cursor 1","projectId":"ext:customer_8812"}"#);
+        let items = api.client().incoming_webhooks().list(params).to_vec().await.unwrap();
+        support::assert_json(&items, &support::json(r#"[
+          {
+            "object": "incoming_webhook",
+            "id": "id 1",
+            "accountId": "accountId 1",
+            "projectId": "projectId 1",
+            "name": "name 1",
+            "to": "to 1",
+            "enabled": true,
+            "url": "https://example.com/url",
+            "createdAt": "2026-09-24T09:00:00.000Z",
+            "updatedAt": "2026-09-24T09:00:00.000Z"
+          },
+          {
+            "object": "incoming_webhook",
+            "id": "id 1",
+            "accountId": "accountId 1",
+            "projectId": "projectId 1",
+            "name": "name 1",
+            "to": "to 1",
+            "enabled": true,
+            "url": "https://example.com/url",
+            "createdAt": "2026-09-24T09:00:00.000Z",
+            "updatedAt": "2026-09-24T09:00:00.000Z"
+          }
+        ]"#));
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 2);
+        assert_eq!(calls[0].method, "GET");
+        assert_eq!(calls[0].path, "/v1/incoming-webhooks");
+        assert_eq!(calls[0].query, support::pairs(&[("limit", "50"), ("projectId", "ext:customer_8812"), ("cursor", "cursor 1")]));
+        assert_eq!(calls[1].query, support::pairs(&[("limit", "50"), ("projectId", "ext:customer_8812"), ("cursor", "cursor_2")]));
+    }
+
+    #[tokio::test]
+    async fn list_fetches_one_page() {
+        let page = support::json(r#"{
+          "object": "list",
+          "items": [
+            {
+              "object": "incoming_webhook",
+              "id": "id 1",
+              "accountId": "accountId 1",
+              "projectId": "projectId 1",
+              "name": "name 1",
+              "to": "to 1",
+              "enabled": true,
+              "url": "https://example.com/url",
+              "createdAt": "2026-09-24T09:00:00.000Z",
+              "updatedAt": "2026-09-24T09:00:00.000Z"
+            }
+          ],
+          "nextCursor": null
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(200, page.clone())]).await;
+        let result = api.client().incoming_webhooks().list(Default::default()).page().await.unwrap();
+        support::assert_json(&result, &page);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "GET");
+        assert_eq!(calls[0].path, "/v1/incoming-webhooks");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+    }
+
+    #[tokio::test]
+    async fn create() {
+        let response = support::json(r#"{
+          "object": "incoming_webhook",
+          "id": "id 1",
+          "accountId": "accountId 1",
+          "projectId": "projectId 1",
+          "name": "name 1",
+          "to": "to 1",
+          "enabled": true,
+          "url": "https://example.com/url",
+          "createdAt": "2026-09-24T09:00:00.000Z",
+          "updatedAt": "2026-09-24T09:00:00.000Z"
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(201, response.clone())]).await;
+        let params: types::IncomingWebhooksCreateParams = support::from_json(r#"{"accountId":"accountId 1","name":"name 1","to":"to 1"}"#);
+        let result = api.client().incoming_webhooks().create(params).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "POST");
+        assert_eq!(calls[0].path, "/v1/incoming-webhooks");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        support::assert_json(&calls[0].body, &support::json(r#"{"accountId":"accountId 1","name":"name 1","to":"to 1"}"#));
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_some_and(|key| !key.is_empty()));
+    }
+
+    #[tokio::test]
+    async fn create_retries_with_one_key() {
+        let response = support::json(r#"{
+          "object": "incoming_webhook",
+          "id": "id 1",
+          "accountId": "accountId 1",
+          "projectId": "projectId 1",
+          "name": "name 1",
+          "to": "to 1",
+          "enabled": true,
+          "url": "https://example.com/url",
+          "createdAt": "2026-09-24T09:00:00.000Z",
+          "updatedAt": "2026-09-24T09:00:00.000Z"
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::status(503), support::Reply::json(201, response.clone())]).await;
+        let params: types::IncomingWebhooksCreateParams = support::from_json(r#"{"accountId":"accountId 1","name":"name 1","to":"to 1"}"#);
+        let result = api.client().incoming_webhooks().create(params).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 2);
+        let key = calls[0].header(sdk::IDEMPOTENCY_HEADER).unwrap();
+        assert!(!key.is_empty());
+        assert_eq!(calls[1].header(sdk::IDEMPOTENCY_HEADER), Some(key));
+        assert_eq!(calls[0].body, calls[1].body);
+    }
+
+    #[tokio::test]
+    async fn get() {
+        let response = support::json(r#"{
+          "object": "incoming_webhook",
+          "id": "id 1",
+          "accountId": "accountId 1",
+          "projectId": "projectId 1",
+          "name": "name 1",
+          "to": "to 1",
+          "enabled": true,
+          "url": "https://example.com/url",
+          "createdAt": "2026-09-24T09:00:00.000Z",
+          "updatedAt": "2026-09-24T09:00:00.000Z"
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+        let result = api.client().incoming_webhooks().get("k57d9x3m2q8v1b6n4c0h7j5pwa9r2ytz").await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "GET");
+        assert_eq!(calls[0].path, "/v1/incoming-webhooks/k57d9x3m2q8v1b6n4c0h7j5pwa9r2ytz");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        assert!(calls[0].body.is_none());
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+    }
+
+    #[tokio::test]
+    async fn update() {
+        let response = support::json(r#"{
+          "object": "incoming_webhook",
+          "id": "id 1",
+          "accountId": "accountId 1",
+          "projectId": "projectId 1",
+          "name": "name 1",
+          "to": "to 1",
+          "enabled": true,
+          "url": "https://example.com/url",
+          "createdAt": "2026-09-24T09:00:00.000Z",
+          "updatedAt": "2026-09-24T09:00:00.000Z"
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+        let params: types::IncomingWebhooksUpdateParams = support::from_json(r#"{"name":"name 1","enabled":true,"rotateUrl":true}"#);
+        let result = api.client().incoming_webhooks().update("k57d9x3m2q8v1b6n4c0h7j5pwa9r2ytz", params).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "PATCH");
+        assert_eq!(calls[0].path, "/v1/incoming-webhooks/k57d9x3m2q8v1b6n4c0h7j5pwa9r2ytz");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        support::assert_json(&calls[0].body, &support::json(r#"{"name":"name 1","enabled":true,"rotateUrl":true}"#));
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+    }
+
+    #[tokio::test]
+    async fn update_without_params() {
+        let response = support::json(r#"{
+          "object": "incoming_webhook",
+          "id": "id 1",
+          "accountId": "accountId 1",
+          "projectId": "projectId 1",
+          "name": "name 1",
+          "to": "to 1",
+          "enabled": true,
+          "url": "https://example.com/url",
+          "createdAt": "2026-09-24T09:00:00.000Z",
+          "updatedAt": "2026-09-24T09:00:00.000Z"
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
+        let result = api.client().incoming_webhooks().update("k57d9x3m2q8v1b6n4c0h7j5pwa9r2ytz", Default::default()).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "PATCH");
+        assert_eq!(calls[0].path, "/v1/incoming-webhooks/k57d9x3m2q8v1b6n4c0h7j5pwa9r2ytz");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        support::assert_json(&calls[0].body, &support::json(r#"{}"#));
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+    }
+
+    #[tokio::test]
+    async fn update_is_not_repeated() {
+        let api = support::MockApi::start(vec![
+            support::Reply::status(503),
+            support::Reply::status(503),
+        ])
+        .await;
+        let params: types::IncomingWebhooksUpdateParams = support::from_json(r#"{"name":"name 1","enabled":true,"rotateUrl":true}"#);
+        let error = api.client().incoming_webhooks().update("k57d9x3m2q8v1b6n4c0h7j5pwa9r2ytz", params).await.unwrap_err();
+        assert_eq!(error.status(), Some(503));
+        assert_eq!(api.calls().await.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn delete() {
+        let api = support::MockApi::start(vec![support::Reply::status(204)]).await;
+        api.client().incoming_webhooks().delete("k57d9x3m2q8v1b6n4c0h7j5pwa9r2ytz").await.unwrap();
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "DELETE");
+        assert_eq!(calls[0].path, "/v1/incoming-webhooks/k57d9x3m2q8v1b6n4c0h7j5pwa9r2ytz");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        assert!(calls[0].body.is_none());
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+    }
+}
+
 mod projects {
     use super::*;
 

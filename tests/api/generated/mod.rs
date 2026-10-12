@@ -12,6 +12,7 @@ mod contacts;
 mod events;
 mod favorite_stickers;
 mod groups;
+mod incoming_webhooks;
 mod invitations;
 mod labels;
 mod messages;
