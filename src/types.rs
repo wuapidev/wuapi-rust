@@ -1344,7 +1344,7 @@ pub struct SendTextMessageRequest {
     pub disappearing_seconds: Option<DisappearingSeconds>,
     #[serde(rename = "linkPreview", default, skip_serializing_if = "Option::is_none")]
     pub link_preview: Option<SendLinkPreview>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
+    /// A wuapi message id in the same chat to quote. One exception, a private reply: a message someone else wrote in a group can be quoted in the direct chat with its author (`to` is that message's `from`). Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
     /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
@@ -1409,7 +1409,7 @@ pub struct SendImageMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
+    /// A wuapi message id in the same chat to quote. One exception, a private reply: a message someone else wrote in a group can be quoted in the direct chat with its author (`to` is that message's `from`). Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
     /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
@@ -1475,7 +1475,7 @@ pub struct SendVideoMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
+    /// A wuapi message id in the same chat to quote. One exception, a private reply: a message someone else wrote in a group can be quoted in the direct chat with its author (`to` is that message's `from`). Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
     /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
@@ -1541,7 +1541,7 @@ pub struct SendAudioMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
+    /// A wuapi message id in the same chat to quote. One exception, a private reply: a message someone else wrote in a group can be quoted in the direct chat with its author (`to` is that message's `from`). Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
     /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
@@ -1603,7 +1603,7 @@ pub struct SendVoiceMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
+    /// A wuapi message id in the same chat to quote. One exception, a private reply: a message someone else wrote in a group can be quoted in the direct chat with its author (`to` is that message's `from`). Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
     /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
@@ -1662,7 +1662,7 @@ pub struct SendDocumentMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
+    /// A wuapi message id in the same chat to quote. One exception, a private reply: a message someone else wrote in a group can be quoted in the direct chat with its author (`to` is that message's `from`). Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
     /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
@@ -1720,7 +1720,7 @@ pub struct SendStickerMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
+    /// A wuapi message id in the same chat to quote. One exception, a private reply: a message someone else wrote in a group can be quoted in the direct chat with its author (`to` is that message's `from`). Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
     /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
@@ -1775,7 +1775,7 @@ pub struct SendLocationMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
+    /// A wuapi message id in the same chat to quote. One exception, a private reply: a message someone else wrote in a group can be quoted in the direct chat with its author (`to` is that message's `from`). Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
     /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
@@ -1833,7 +1833,7 @@ pub struct SendContactMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
+    /// A wuapi message id in the same chat to quote. One exception, a private reply: a message someone else wrote in a group can be quoted in the direct chat with its author (`to` is that message's `from`). Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
     /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
@@ -1888,7 +1888,7 @@ pub struct SendContactsMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
+    /// A wuapi message id in the same chat to quote. One exception, a private reply: a message someone else wrote in a group can be quoted in the direct chat with its author (`to` is that message's `from`). Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
     /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
@@ -1946,7 +1946,7 @@ pub struct SendPollMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
+    /// A wuapi message id in the same chat to quote. One exception, a private reply: a message someone else wrote in a group can be quoted in the direct chat with its author (`to` is that message's `from`). Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
     /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
@@ -2001,7 +2001,7 @@ pub struct SendCalendarEventMessageRequest {
     /// Match the chat's disappearing timer.
     #[serde(rename = "disappearingSeconds", default, skip_serializing_if = "Option::is_none")]
     pub disappearing_seconds: Option<DisappearingSeconds>,
-    /// A wuapi message id in the same chat to quote. Any type. Not for channel posts. Not together with `replyToStoryId`.
+    /// A wuapi message id in the same chat to quote. One exception, a private reply: a message someone else wrote in a group can be quoted in the direct chat with its author (`to` is that message's `from`). Any type. Not for channel posts. Not together with `replyToStoryId`.
     #[serde(rename = "replyToMessageId", default, skip_serializing_if = "Option::is_none")]
     pub reply_to_message_id: Option<String>,
     /// Reply to a contact's story: the story's `id` (from `GET /v1/accounts/{accountId}/stories`). `to` must be the story's `contactId`: the reply is a message in the chat with its author, who sees it as a reply to their story. Not together with `replyToMessageId`; not for groups or channels.
