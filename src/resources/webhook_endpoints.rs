@@ -27,7 +27,7 @@ use crate::types;
 /// | `chat.presence_updated` | A contact is typing or recording in a chat. | `chat_presence` |
 /// | `contact.presence_updated` | A subscribed contact came online or went offline. Subscribe with `POST .../contacts/{contactId}/subscribe-presence`. | `contact_presence` |
 /// | `contact.picture_updated` | A contact or group picture changed or was removed. | `picture_change` |
-/// | `contact.updated` | A contact changed their About text. Fields WhatsApp did not send are `null`. | `contact` |
+/// | `contact.updated` | A contact changed their About text or username, or a name saved through wuapi reached the phone or failed (`phoneSync`). Fields the source did not send are `null`. | `contact` |
 /// | `blocklist.updated` | The blocklist changed. | `blocklist_change` |
 /// | `sticker.favorites_updated` | The account's favorite stickers changed: one was added or removed, or the whole list was read from WhatsApp again (one event, with counts). | `sticker_favorites_change` |
 /// | `label.updated` | A label was edited or (un)assigned to a chat or message. The full sync replays labels this way, which is how the label list arrives. | `label_change` |

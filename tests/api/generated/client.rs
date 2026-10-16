@@ -112,6 +112,13 @@ mod accounts {
               "historySync": "none",
               "mediaAutoDownload": "none",
               "imageQuality": "standard",
+              "contactAutoSave": {
+                "enabled": true,
+                "trigger": "first_inbound",
+                "nameTemplate": "nameTemplate 1",
+                "fallbackName": "fallbackName 1",
+                "dailyLimit": 1
+              },
               "metadata": {
                 "key": "value 1"
               },
@@ -163,6 +170,13 @@ mod accounts {
               "historySync": "none",
               "mediaAutoDownload": "none",
               "imageQuality": "standard",
+              "contactAutoSave": {
+                "enabled": true,
+                "trigger": "first_inbound",
+                "nameTemplate": "nameTemplate 1",
+                "fallbackName": "fallbackName 1",
+                "dailyLimit": 1
+              },
               "metadata": {
                 "key": "value 1"
               },
@@ -219,6 +233,13 @@ mod accounts {
             "historySync": "none",
             "mediaAutoDownload": "none",
             "imageQuality": "standard",
+            "contactAutoSave": {
+              "enabled": true,
+              "trigger": "first_inbound",
+              "nameTemplate": "nameTemplate 1",
+              "fallbackName": "fallbackName 1",
+              "dailyLimit": 1
+            },
             "metadata": {
               "key": "value 1"
             },
@@ -264,6 +285,13 @@ mod accounts {
             "historySync": "none",
             "mediaAutoDownload": "none",
             "imageQuality": "standard",
+            "contactAutoSave": {
+              "enabled": true,
+              "trigger": "first_inbound",
+              "nameTemplate": "nameTemplate 1",
+              "fallbackName": "fallbackName 1",
+              "dailyLimit": 1
+            },
             "metadata": {
               "key": "value 1"
             },
@@ -323,6 +351,13 @@ mod accounts {
               "historySync": "none",
               "mediaAutoDownload": "none",
               "imageQuality": "standard",
+              "contactAutoSave": {
+                "enabled": true,
+                "trigger": "first_inbound",
+                "nameTemplate": "nameTemplate 1",
+                "fallbackName": "fallbackName 1",
+                "dailyLimit": 1
+              },
               "metadata": {
                 "key": "value 1"
               },
@@ -383,6 +418,13 @@ mod accounts {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1",
+            "dailyLimit": 1
+          },
           "metadata": {
             "key": "value 1"
           },
@@ -463,6 +505,13 @@ mod accounts {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1",
+            "dailyLimit": 1
+          },
           "metadata": {
             "key": "value 1"
           },
@@ -532,6 +581,13 @@ mod accounts {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1",
+            "dailyLimit": 1
+          },
           "metadata": {
             "key": "value 1"
           },
@@ -591,6 +647,13 @@ mod accounts {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1",
+            "dailyLimit": 1
+          },
           "metadata": {
             "key": "value 1"
           },
@@ -618,6 +681,12 @@ mod accounts {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1"
+          },
           "proxyLocation": {
             "country": "country 1",
             "city": "city 1",
@@ -649,6 +718,12 @@ mod accounts {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1"
+          },
           "proxyLocation": {
             "country": "country 1",
             "city": "city 1",
@@ -697,6 +772,13 @@ mod accounts {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1",
+            "dailyLimit": 1
+          },
           "metadata": {
             "key": "value 1"
           },
@@ -742,6 +824,12 @@ mod accounts {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1"
+          },
           "proxyLocation": {
             "country": "country 1",
             "city": "city 1",
@@ -805,6 +893,13 @@ mod accounts {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1",
+            "dailyLimit": 1
+          },
           "metadata": {
             "key": "value 1"
           },
@@ -864,6 +959,13 @@ mod accounts {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1",
+            "dailyLimit": 1
+          },
           "metadata": {
             "key": "value 1"
           },
@@ -922,6 +1024,13 @@ mod accounts {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1",
+            "dailyLimit": 1
+          },
           "metadata": {
             "key": "value 1"
           },
@@ -981,6 +1090,13 @@ mod accounts {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1",
+            "dailyLimit": 1
+          },
           "metadata": {
             "key": "value 1"
           },
@@ -5541,7 +5657,16 @@ mod contacts {
               "about": "about 1",
               "pictureId": "pictureId 1",
               "businessName": "businessName 1",
-              "deviceCount": 1
+              "deviceCount": 1,
+              "phoneSync": {
+                "status": "pending",
+                "source": "manual",
+                "error": {
+                  "code": "code 1",
+                  "message": "message 1"
+                },
+                "updatedAt": "2026-09-24T09:00:00.000Z"
+              }
             }
           ],
           "nextCursor": "cursor_2"
@@ -5561,7 +5686,16 @@ mod contacts {
               "about": "about 1",
               "pictureId": "pictureId 1",
               "businessName": "businessName 1",
-              "deviceCount": 1
+              "deviceCount": 1,
+              "phoneSync": {
+                "status": "pending",
+                "source": "manual",
+                "error": {
+                  "code": "code 1",
+                  "message": "message 1"
+                },
+                "updatedAt": "2026-09-24T09:00:00.000Z"
+              }
             }
           ],
           "nextCursor": null
@@ -5586,7 +5720,16 @@ mod contacts {
             "about": "about 1",
             "pictureId": "pictureId 1",
             "businessName": "businessName 1",
-            "deviceCount": 1
+            "deviceCount": 1,
+            "phoneSync": {
+              "status": "pending",
+              "source": "manual",
+              "error": {
+                "code": "code 1",
+                "message": "message 1"
+              },
+              "updatedAt": "2026-09-24T09:00:00.000Z"
+            }
           },
           {
             "object": "contact",
@@ -5600,7 +5743,16 @@ mod contacts {
             "about": "about 1",
             "pictureId": "pictureId 1",
             "businessName": "businessName 1",
-            "deviceCount": 1
+            "deviceCount": 1,
+            "phoneSync": {
+              "status": "pending",
+              "source": "manual",
+              "error": {
+                "code": "code 1",
+                "message": "message 1"
+              },
+              "updatedAt": "2026-09-24T09:00:00.000Z"
+            }
           }
         ]"#));
         let calls = api.calls().await;
@@ -5628,7 +5780,16 @@ mod contacts {
               "about": "about 1",
               "pictureId": "pictureId 1",
               "businessName": "businessName 1",
-              "deviceCount": 1
+              "deviceCount": 1,
+              "phoneSync": {
+                "status": "pending",
+                "source": "manual",
+                "error": {
+                  "code": "code 1",
+                  "message": "message 1"
+                },
+                "updatedAt": "2026-09-24T09:00:00.000Z"
+              }
             }
           ],
           "nextCursor": null
@@ -5657,7 +5818,16 @@ mod contacts {
           "about": "about 1",
           "pictureId": "pictureId 1",
           "businessName": "businessName 1",
-          "deviceCount": 1
+          "deviceCount": 1,
+          "phoneSync": {
+            "status": "pending",
+            "source": "manual",
+            "error": {
+              "code": "code 1",
+              "message": "message 1"
+            },
+            "updatedAt": "2026-09-24T09:00:00.000Z"
+          }
         }"#);
         let api = support::MockApi::start(vec![support::Reply::json(200, response.clone())]).await;
         let result = api.client().contacts().get("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "+584241112233").await.unwrap();
@@ -5669,6 +5839,183 @@ mod contacts {
         assert_eq!(calls[0].query, support::pairs(&[]));
         assert!(calls[0].body.is_none());
         assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_none());
+    }
+
+    #[tokio::test]
+    async fn update() {
+        let response = support::json(r#"{
+          "object": "contact",
+          "id": "id 1",
+          "accountId": "accountId 1",
+          "phone": "phone 1",
+          "lid": "lid 1",
+          "savedName": "savedName 1",
+          "profileName": "profileName 1",
+          "username": "username 1",
+          "about": "about 1",
+          "pictureId": "pictureId 1",
+          "businessName": "businessName 1",
+          "deviceCount": 1,
+          "phoneSync": {
+            "status": "pending",
+            "source": "manual",
+            "error": {
+              "code": "code 1",
+              "message": "message 1"
+            },
+            "updatedAt": "2026-09-24T09:00:00.000Z"
+          }
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(202, response.clone())]).await;
+        let params: types::ContactsUpdateParams = support::from_json(r#"{"savedName":"savedName 1","firstName":"firstName 1"}"#);
+        let result = api.client().contacts().update("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "+584241112233", params).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "PATCH");
+        assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/contacts/%2B584241112233");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        support::assert_json(&calls[0].body, &support::json(r#"{"savedName":"savedName 1","firstName":"firstName 1"}"#));
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_some_and(|key| !key.is_empty()));
+    }
+
+    #[tokio::test]
+    async fn update_retries_with_one_key() {
+        let response = support::json(r#"{
+          "object": "contact",
+          "id": "id 1",
+          "accountId": "accountId 1",
+          "phone": "phone 1",
+          "lid": "lid 1",
+          "savedName": "savedName 1",
+          "profileName": "profileName 1",
+          "username": "username 1",
+          "about": "about 1",
+          "pictureId": "pictureId 1",
+          "businessName": "businessName 1",
+          "deviceCount": 1,
+          "phoneSync": {
+            "status": "pending",
+            "source": "manual",
+            "error": {
+              "code": "code 1",
+              "message": "message 1"
+            },
+            "updatedAt": "2026-09-24T09:00:00.000Z"
+          }
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::status(503), support::Reply::json(202, response.clone())]).await;
+        let params: types::ContactsUpdateParams = support::from_json(r#"{"savedName":"savedName 1","firstName":"firstName 1"}"#);
+        let result = api.client().contacts().update("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", "+584241112233", params).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 2);
+        let key = calls[0].header(sdk::IDEMPOTENCY_HEADER).unwrap();
+        assert!(!key.is_empty());
+        assert_eq!(calls[1].header(sdk::IDEMPOTENCY_HEADER), Some(key));
+        assert_eq!(calls[0].body, calls[1].body);
+    }
+
+    #[tokio::test]
+    async fn save_many() {
+        let response = support::json(r#"{
+          "object": "contact_batch",
+          "batchId": "batchId 1",
+          "contacts": [
+            {
+              "contactId": "contactId 1",
+              "status": "pending"
+            }
+          ]
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::json(202, response.clone())]).await;
+        let params: types::ContactsSaveManyParams = support::from_json(r#"{
+          "contacts": [
+            {
+              "contactId": "contactId 1",
+              "savedName": "savedName 1",
+              "firstName": "firstName 1"
+            }
+          ]
+        }"#);
+        let result = api.client().contacts().save_many("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", params).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "POST");
+        assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/contacts/batch");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        support::assert_json(&calls[0].body, &support::json(r#"{
+          "contacts": [
+            {
+              "contactId": "contactId 1",
+              "savedName": "savedName 1",
+              "firstName": "firstName 1"
+            }
+          ]
+        }"#));
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_some_and(|key| !key.is_empty()));
+    }
+
+    #[tokio::test]
+    async fn save_many_retries_with_one_key() {
+        let response = support::json(r#"{
+          "object": "contact_batch",
+          "batchId": "batchId 1",
+          "contacts": [
+            {
+              "contactId": "contactId 1",
+              "status": "pending"
+            }
+          ]
+        }"#);
+        let api = support::MockApi::start(vec![support::Reply::status(503), support::Reply::json(202, response.clone())]).await;
+        let params: types::ContactsSaveManyParams = support::from_json(r#"{
+          "contacts": [
+            {
+              "contactId": "contactId 1",
+              "savedName": "savedName 1",
+              "firstName": "firstName 1"
+            }
+          ]
+        }"#);
+        let result = api.client().contacts().save_many("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr", params).await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 2);
+        let key = calls[0].header(sdk::IDEMPOTENCY_HEADER).unwrap();
+        assert!(!key.is_empty());
+        assert_eq!(calls[1].header(sdk::IDEMPOTENCY_HEADER), Some(key));
+        assert_eq!(calls[0].body, calls[1].body);
+    }
+
+    #[tokio::test]
+    async fn backfill_auto_save() {
+        let response = support::json(r#"{"object":"contact_auto_save_backfill","accountId":"accountId 1","dailyLimit":1}"#);
+        let api = support::MockApi::start(vec![support::Reply::json(202, response.clone())]).await;
+        let result = api.client().contacts().backfill_auto_save("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr").await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].method, "POST");
+        assert_eq!(calls[0].path, "/v1/accounts/k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr/contacts/auto-save/backfill");
+        assert_eq!(calls[0].query, support::pairs(&[]));
+        assert!(calls[0].body.is_none());
+        assert!(calls[0].header(sdk::IDEMPOTENCY_HEADER).is_some_and(|key| !key.is_empty()));
+    }
+
+    #[tokio::test]
+    async fn backfill_auto_save_retries_with_one_key() {
+        let response = support::json(r#"{"object":"contact_auto_save_backfill","accountId":"accountId 1","dailyLimit":1}"#);
+        let api = support::MockApi::start(vec![support::Reply::status(503), support::Reply::json(202, response.clone())]).await;
+        let result = api.client().contacts().backfill_auto_save("k57a8m2x9d3f0q1wjh6ypc4n2d7s0vbr").await.unwrap();
+        support::assert_json(&result, &response);
+        let calls = api.calls().await;
+        assert_eq!(calls.len(), 2);
+        let key = calls[0].header(sdk::IDEMPOTENCY_HEADER).unwrap();
+        assert!(!key.is_empty());
+        assert_eq!(calls[1].header(sdk::IDEMPOTENCY_HEADER), Some(key));
+        assert_eq!(calls[0].body, calls[1].body);
     }
 
     #[tokio::test]
@@ -5745,7 +6092,16 @@ mod contacts {
               "about": "about 1",
               "pictureId": "pictureId 1",
               "businessName": "businessName 1",
-              "deviceCount": 1
+              "deviceCount": 1,
+              "phoneSync": {
+                "status": "pending",
+                "source": "manual",
+                "error": {
+                  "code": "code 1",
+                  "message": "message 1"
+                },
+                "updatedAt": "2026-09-24T09:00:00.000Z"
+              }
             }
           ],
           "nextCursor": "nextCursor 1"
@@ -5780,7 +6136,16 @@ mod contacts {
               "about": "about 1",
               "pictureId": "pictureId 1",
               "businessName": "businessName 1",
-              "deviceCount": 1
+              "deviceCount": 1,
+              "phoneSync": {
+                "status": "pending",
+                "source": "manual",
+                "error": {
+                  "code": "code 1",
+                  "message": "message 1"
+                },
+                "updatedAt": "2026-09-24T09:00:00.000Z"
+              }
             }
           ],
           "nextCursor": "nextCursor 1"
