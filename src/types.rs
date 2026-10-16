@@ -245,6 +245,9 @@ pub struct Account {
     /// What this account's image messages are re-encoded to before their upload. `standard` by default. A send can name its own with `media.quality`.
     #[serde(rename = "imageQuality")]
     pub image_quality: ImageQualitySetting,
+    /// Saving the contacts of new chats on the phone automatically. Off by default.
+    #[serde(rename = "contactAutoSave")]
+    pub contact_auto_save: ContactAutoSave,
     /// Your labels. Set from an invitation's `metadata` when the invitee links the number.
     pub metadata: std::collections::BTreeMap<String, String>,
     /// When linking first finished.
@@ -457,6 +460,9 @@ pub struct AccountUpdateRequest {
     /// What this account's image messages are re-encoded to before their upload. Applies to images sent from then on; a send that names `media.quality` keeps its own.
     #[serde(rename = "imageQuality", default, skip_serializing_if = "Option::is_none")]
     pub image_quality: Option<ImageQualitySetting>,
+    /// Save the contacts of new chats on the phone automatically. Applies to chats from then on; `POST …/contacts/auto-save/backfill` queues the existing ones.
+    #[serde(rename = "contactAutoSave", default, skip_serializing_if = "Option::is_none")]
+    pub contact_auto_save: Option<ContactAutoSaveUpdate>,
     /// Move the number, or switch whether its city is exact. A location change: the number gets a new exit IP and its session reconnects.
     #[serde(rename = "proxyLocation", default, skip_serializing_if = "Option::is_none")]
     pub proxy_location: Option<ProxyLocationUpdate>,
@@ -2875,7 +2881,7 @@ impl ContactLookupRequest {
     }
 }
 
-/// A WhatsApp user, as this account sees it. The same object comes from three places, and each fills what it knows: the contact list and `GET …/contacts/{contactId}` read the account's address book as its phone synced it to wuapi (`savedName`, `profileName`, `businessName`, and the `username` and `pictureId` wuapi has seen; `about` and `deviceCount` are `null`); `POST …/contacts/lookup` asks WhatsApp (`about`, `pictureId`, `businessName`, `deviceCount`, `username`; `savedName` and `profileName` are `null`); `contact.updated` carries the field that changed. A field that source does not know is `null`.
+/// A WhatsApp user, as this account sees it. The same object comes from three places, and each fills what it knows: the contact list and `GET …/contacts/{contactId}` read the account's address book as its phone synced it to wuapi (`savedName`, `profileName`, `businessName`, and the `username` and `pictureId` wuapi has seen; `about` and `deviceCount` are `null`); `POST …/contacts/lookup` asks WhatsApp (`about`, `pictureId`, `businessName`, `deviceCount`, `username`; `savedName` and `profileName` are `null`); `contact.updated` carries the field that changed, or the whole contact when a name saved through wuapi reached the phone or failed (`phoneSync`). A field that source does not know is `null`.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Contact {
     /// Always `contact`.
@@ -2889,7 +2895,7 @@ pub struct Contact {
     pub phone: Option<String>,
     /// The contact's `lid:<digits>` id, when WhatsApp gave one.
     pub lid: Option<String>,
-    /// The name the account saved the contact under in its phone's address book, else the contact's business name: the same value as `savedName` of its chat. Set by the contact list and `GET …/contacts/{contactId}`; `null` from a lookup and in `contact.updated`.
+    /// The name the account saved the contact under in its phone's address book, else the contact's business name: the same value as `savedName` of its chat. A name being saved on the phone (`phoneSync.status: pending`) shows here at once. Set by the contact list and `GET …/contacts/{contactId}`; `null` from a lookup and in the About and username `contact.updated` events.
     #[serde(rename = "savedName")]
     pub saved_name: Option<String>,
     /// The contact's WhatsApp profile name, as the account's phone last saw it. `null` when unknown, from a lookup and in `contact.updated`.
@@ -2908,6 +2914,9 @@ pub struct Contact {
     /// Devices linked to the contact. Only a lookup sets it.
     #[serde(rename = "deviceCount")]
     pub device_count: Option<i64>,
+    /// Where saving the contact on the account's phone stands, when a name was set through wuapi (`PATCH …/contacts/{contactId}`, the batch, auto-save or the dashboard). `null` otherwise, and from a lookup.
+    #[serde(rename = "phoneSync")]
+    pub phone_sync: Option<PhoneSync>,
 }
 
 /// A page of `Contact` objects.
@@ -5296,7 +5305,7 @@ pub struct ContactPictureUpdatedEventData {
     pub object: PictureChange,
 }
 
-/// A contact changed their About text, or their WhatsApp username became known or changed. Fields WhatsApp did not send are `null`.
+/// A contact changed their About text, their WhatsApp username became known or changed, or a name saved through wuapi reached the phone or failed (`phoneSync`, with the whole contact). Fields the source did not send are `null`.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ContactUpdatedEvent {
     /// Event id (`evt_...`). Deduplicate on it.
@@ -6023,6 +6032,204 @@ impl UploadCompleteRequest {
     }
 }
 
+/// Saving the contacts of new chats on the account's phone (WhatsApp and the phone's address book). Only direct chats with a phone number: never groups, channels or stories. A contact the phone already holds a name for is never renamed, and a contact is saved at most once: renamed or deleted on the phone later, it is not written again. At most `dailyLimit` auto-saves go out per account and UTC day, a few minutes apart; the rest wait for the next day.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ContactAutoSave {
+    /// Save new contacts automatically. `false` by default.
+    pub enabled: bool,
+    /// `first_inbound`: when the contact sends their first message in a new direct chat. `any_chat`: when a new direct chat starts, whoever writes first.
+    pub trigger: ContactAutoSaveTrigger,
+    /// The saved name. `{profileName}` is the contact's WhatsApp profile name, `{phone}` their number in E.164. When it needs a profile name the contact has not set, `fallbackName` is used.
+    #[serde(rename = "nameTemplate")]
+    pub name_template: String,
+    /// The saved name when `nameTemplate` cannot be filled. Same placeholders.
+    #[serde(rename = "fallbackName")]
+    pub fallback_name: String,
+    /// Most auto-saves per account and UTC day (read-only).
+    #[serde(rename = "dailyLimit")]
+    pub daily_limit: i64,
+}
+
+string_enum! {
+    pub enum ContactAutoSaveTrigger {
+        /// `first_inbound`
+        FirstInbound = "first_inbound",
+        /// `any_chat`
+        AnyChat = "any_chat",
+        @unknown Unknown,
+    }
+}
+
+/// A change to `contactAutoSave`: the given fields change, the others keep their value.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
+pub struct ContactAutoSaveUpdate {
+    /// Save new contacts automatically. `false` by default.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub enabled: Option<bool>,
+    /// `first_inbound`: when the contact sends their first message in a new direct chat. `any_chat`: when a new direct chat starts, whoever writes first.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub trigger: Option<ContactAutoSaveUpdateTrigger>,
+    /// The saved name. `{profileName}` is the contact's WhatsApp profile name, `{phone}` their number in E.164. When it needs a profile name the contact has not set, `fallbackName` is used.
+    #[serde(rename = "nameTemplate", default, skip_serializing_if = "Option::is_none")]
+    pub name_template: Option<String>,
+    /// The saved name when `nameTemplate` cannot be filled. Same placeholders.
+    #[serde(rename = "fallbackName", default, skip_serializing_if = "Option::is_none")]
+    pub fallback_name: Option<String>,
+}
+
+string_enum! {
+    pub enum ContactAutoSaveUpdateTrigger {
+        /// `first_inbound`
+        FirstInbound = "first_inbound",
+        /// `any_chat`
+        AnyChat = "any_chat",
+        @unknown Unknown,
+    }
+}
+
+/// Where the contact's last name change made through wuapi stands on the account's phone. Saving goes to WhatsApp and the phone's own address book; the phone applies it about a minute after it is `synced`.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct PhoneSync {
+    /// `pending`: queued, or being sent (also while the account reconnects). `synced`: WhatsApp took the change. `failed`: see `error`.
+    pub status: PhoneSyncStatus,
+    /// `manual`: the dashboard. `api`: this API. `auto`: contact auto-save.
+    pub source: PhoneSyncSource,
+    /// Why it failed. `code`: `not_on_whatsapp` (the number has no WhatsApp), `account_offline` (the account went down for good, or stayed offline past its tolerance, before the change was sent) or `save_failed`.
+    pub error: Option<PhoneSyncError>,
+    #[serde(rename = "updatedAt")]
+    pub updated_at: String,
+}
+
+string_enum! {
+    pub enum PhoneSyncStatus {
+        /// `pending`
+        Pending = "pending",
+        /// `synced`
+        Synced = "synced",
+        /// `failed`
+        Failed = "failed",
+        @unknown Unknown,
+    }
+}
+
+string_enum! {
+    pub enum PhoneSyncSource {
+        /// `manual`
+        Manual = "manual",
+        /// `api`
+        Api = "api",
+        /// `auto`
+        Auto = "auto",
+        @unknown Unknown,
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct PhoneSyncError {
+    pub code: String,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ContactSaveRequest {
+    /// The name to save the contact under. `null` (removing the contact) is not supported: `400 not_supported`.
+    #[serde(rename = "savedName")]
+    pub saved_name: Option<String>,
+    /// The short name the phone shows. Defaults to the first word of `savedName`.
+    #[serde(rename = "firstName", default, skip_serializing_if = "Option::is_none")]
+    pub first_name: Option<String>,
+}
+
+impl ContactSaveRequest {
+    /// A `ContactSaveRequest` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(saved_name: Option<String>) -> Self {
+        Self {
+            saved_name,
+            first_name: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ContactSaveBatchRequest {
+    pub contacts: Vec<ContactSaveBatchRequestContactsItem>,
+}
+
+impl ContactSaveBatchRequest {
+    /// A `ContactSaveBatchRequest` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(contacts: Vec<ContactSaveBatchRequestContactsItem>) -> Self {
+        Self {
+            contacts,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ContactSaveBatchRequestContactsItem {
+    /// E.164 number, or `lid:<digits>` when the address book knows its number.
+    #[serde(rename = "contactId")]
+    pub contact_id: String,
+    #[serde(rename = "savedName")]
+    pub saved_name: String,
+    #[serde(rename = "firstName", default, skip_serializing_if = "Option::is_none")]
+    pub first_name: Option<String>,
+}
+
+impl ContactSaveBatchRequestContactsItem {
+    /// A `ContactSaveBatchRequestContactsItem` from its required fields; the rest start as `None`.
+    #[must_use]
+    pub fn new(contact_id: impl Into<String>, saved_name: impl Into<String>) -> Self {
+        Self {
+            contact_id: contact_id.into(),
+            saved_name: saved_name.into(),
+            first_name: None,
+        }
+    }
+}
+
+/// A batch of contact saves, queued.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ContactSaveBatch {
+    pub object: String,
+    /// The batch's id (`cwb_…`).
+    #[serde(rename = "batchId")]
+    pub batch_id: String,
+    pub contacts: Vec<ContactSaveBatchContactsItem>,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ContactSaveBatchContactsItem {
+    #[serde(rename = "contactId")]
+    pub contact_id: String,
+    /// `pending`: queued. `synced`: the phone already holds that name. `failed`: a `lid:<digits>` contact whose number is not known.
+    pub status: ContactSaveBatchContactsItemStatus,
+}
+
+string_enum! {
+    pub enum ContactSaveBatchContactsItemStatus {
+        /// `pending`
+        Pending = "pending",
+        /// `synced`
+        Synced = "synced",
+        /// `failed`
+        Failed = "failed",
+        @unknown Unknown,
+    }
+}
+
+/// The backfill of contact auto-save, started.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ContactAutoSaveBackfill {
+    pub object: String,
+    #[serde(rename = "accountId")]
+    pub account_id: String,
+    /// Most auto-saves sent per UTC day: a large backfill takes several days.
+    #[serde(rename = "dailyLimit")]
+    pub daily_limit: i64,
+}
+
 string_enum! {
     pub enum ListChatsType {
         /// `direct`
@@ -6287,6 +6494,12 @@ pub struct ContactsListParams {
     #[serde(default)]
     pub cursor: Option<String>,
 }
+
+/// Params for `contacts.update`.
+pub type ContactsUpdateParams = ContactSaveRequest;
+
+/// Params for `contacts.save_many`.
+pub type ContactsSaveManyParams = ContactSaveBatchRequest;
 
 /// Params for `contacts.check`.
 pub type ContactsCheckParams = ContactCheckRequest;

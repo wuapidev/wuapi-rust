@@ -61,6 +61,13 @@ fn event_verifies_and_parses() {
           "historySync": "none",
           "mediaAutoDownload": "none",
           "imageQuality": "standard",
+          "contactAutoSave": {
+            "enabled": true,
+            "trigger": "first_inbound",
+            "nameTemplate": "nameTemplate 1",
+            "fallbackName": "fallbackName 1",
+            "dailyLimit": 1
+          },
           "metadata": {
             "key": "value 1"
           },
