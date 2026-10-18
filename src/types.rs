@@ -800,7 +800,8 @@ pub struct MessageError {
     /// - `account_offline`: The account was reconnecting for longer than the offline tolerance, or went down for good, while the message waited for it.
     /// - `cancelled`: Deleted with `DELETE /v1/messages/{messageId}` while it was still queued; it was never sent.
     /// - `payment_required`: It was queued before proxy traffic paused for an unpaid invoice, and the pause lasted more than 24 hours.
-    /// - `proxy_spend_cap_reached`: It was queued before proxy traffic paused at the monthly proxy spend cap, and the pause lasted more than 24 hours.
+    /// - `proxy_spend_cap_reached`: It was queued before proxy traffic paused at the monthly proxy spend cap (legacy metered billing), and the pause lasted more than 24 hours.
+    /// - `proxy_fair_use_reached`: It was queued before proxy traffic paused at the monthly fair use, and the pause lasted more than 24 hours.
     /// - `media_expired`: A forward whose file WhatsApp no longer has and wuapi never stored, found out while sending it.
     pub code: MessageErrorCode,
     pub message: String,
@@ -822,6 +823,8 @@ string_enum! {
         PaymentRequired = "payment_required",
         /// `proxy_spend_cap_reached`
         ProxySpendCapReached = "proxy_spend_cap_reached",
+        /// `proxy_fair_use_reached`
+        ProxyFairUseReached = "proxy_fair_use_reached",
         /// `media_expired`
         MediaExpired = "media_expired",
         @unknown Unknown,
@@ -4129,22 +4132,22 @@ pub struct Usage {
     /// Accounts billable right now.
     #[serde(rename = "billableAccountCount")]
     pub billable_account_count: i64,
-    /// Price of the band the last billable account falls in: 600 for account 1, 450 each for 2-50, 350 each from the 51st. Bands are graduated: each account is billed at its own band's price.
+    /// Price of the band the last billable account falls in: 700 for account 1, 525 each for 2-50, 410 each from the 51st (subscriptions started before 2026-10-18 keep 600, 450 and 350). Bands are graduated: each account is billed at its own band's price.
     #[serde(rename = "accountUnitPriceCents")]
     pub account_unit_price_cents: i64,
-    /// The graduated total for `billableAccountCount` accounts: 600 for account 1, 450 each for 2-50, 350 each from the 51st.
+    /// The graduated total for `billableAccountCount` accounts: 700 for account 1, 525 each for 2-50, 410 each from the 51st (subscriptions started before 2026-10-18 keep 600, 450 and 350).
     #[serde(rename = "accountFeeCents")]
     pub account_fee_cents: i64,
     /// Every byte of residential proxy traffic this month, included or not, traffic used on the Free plan included.
     #[serde(rename = "proxyBytes")]
     pub proxy_bytes: i64,
-    /// This month's pooled proxy allowance: 0.5 GB (536870912 bytes) per billable account, counted at the most accounts billable this month.
+    /// This month's pooled proxy traffic included in the price: the fair use, 5 GB (5368709120 bytes) per billable account, counted at the most accounts billable this month. Past it the organization's accounts pause until the month ends (`proxy_fair_use_reached`); nothing is charged. On legacy metered billing (subscriptions started before 2026-10-18): the allowance, 0.5 GB (536870912 bytes) per billable account.
     #[serde(rename = "includedProxyBytes")]
     pub included_proxy_bytes: i64,
-    /// Proxy bytes past `includedProxyBytes`, leaving out traffic used on the Free plan (or during a legacy free trial). `proxyFeeCents` bills these only.
+    /// Legacy metered billing only: proxy bytes past `includedProxyBytes`, leaving out traffic used on the Free plan (or during a legacy free trial). `proxyFeeCents` bills these only. Always 0 on the current price, which includes proxy traffic.
     #[serde(rename = "billableProxyBytes")]
     pub billable_proxy_bytes: i64,
-    /// `billableProxyBytes` at $0.99 per GB (1 GB = 1024^3 bytes), rounded to the cent. Traffic within the allowance costs nothing.
+    /// Legacy metered billing only: `billableProxyBytes` at $0.99 per GB (1 GB = 1024^3 bytes), rounded to the cent. Always 0 on the current price.
     #[serde(rename = "proxyFeeCents")]
     pub proxy_fee_cents: i64,
     /// `accountFeeCents` + `proxyFeeCents`.
